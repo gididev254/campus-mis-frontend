@@ -39,7 +39,7 @@ export default function OrderDetailsPage() {
         if (err.response?.status === 404) {
           toast.error('Order not found');
           router.push('/buyer/orders');
-        } else if (error.response?.status === 403) {
+        } else if (err.response?.status === 403) {
           toast.error('You are not authorized to view this order');
           router.push('/products');
         }
@@ -86,9 +86,7 @@ export default function OrderDetailsPage() {
     setPaying(true);
     try {
       const res = await ordersAPI.initiatePayment(order._id, { phoneNumber });
-      toast.success(`Payment initiated! Check your phone for M-Pesa prompt.`, {
-        description: `Request ID: ${res.data.checkoutRequestID}`
-      });
+      toast.success(`Payment initiated! Request ID: ${res.data.checkoutRequestID}. Check your phone for M-Pesa prompt.`);
       // Refresh order details
       const orderRes = await ordersAPI.getOrder(order._id);
       setOrder(orderRes.data.order);

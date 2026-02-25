@@ -88,7 +88,7 @@ test('validateRequired - passes with non-empty value', () => {
 test('validateRequired - fails with empty string', () => {
   const result = validateRequired('', 'Field');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('required'));
+  assertTrue(result.error ? result.error.includes('required') : false);
 });
 
 test('validateRequired - fails with whitespace only', () => {
@@ -157,13 +157,13 @@ test('validatePassword - passes with strong password', () => {
 test('validatePassword - fails if too short', () => {
   const result = validatePassword('Pass1!');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('12 characters'));
+  assertTrue(result.error ? result.error.includes('12 characters') : false);
 });
 
 test('validatePassword - fails without uppercase', () => {
   const result = validatePassword('password123!');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('uppercase'));
+  assertTrue(result.error ? result.error.includes('uppercase') : false);
 });
 
 test('validatePassword - fails without lowercase', () => {
@@ -189,7 +189,7 @@ test('validatePasswordMatch - passes with matching passwords', () => {
 test('validatePasswordMatch - fails with non-matching passwords', () => {
   const result = validatePasswordMatch('Password123!', 'Different123!');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('do not match'));
+  assertTrue(result.error ? result.error.includes('do not match') : false);
 });
 
 // ============================================================================
@@ -238,7 +238,7 @@ test('validatePrice - passes with integer', () => {
 test('validatePrice - fails with zero', () => {
   const result = validatePrice('0');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('greater than 0'));
+  assertTrue(result.error ? result.error.includes('greater than 0') : false);
 });
 
 test('validatePrice - fails with invalid format', () => {
@@ -260,13 +260,13 @@ test('validateLength - passes with valid length', () => {
 test('validateLength - fails if too short', () => {
   const result = validateLength('Hi', 5, 20, 'Name');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('at least 5'));
+  assertTrue(result.error ? result.error.includes('at least 5') : false);
 });
 
 test('validateLength - fails if too long', () => {
   const result = validateLength('This is a very long name that exceeds maximum', 5, 20, 'Name');
   assertFalse(result.isValid);
-  assertTrue(result.error?.includes('less than 20'));
+  assertTrue(result.error ? result.error.includes('less than 20') : false);
 });
 
 // ============================================================================
@@ -316,7 +316,7 @@ test('validateRegistrationForm - fails with weak password', () => {
     role: 'buyer',
   });
   assertFalse(validation.isValid);
-  assertTrue(validation.errors.password);
+  assertTrue(!!validation.errors.password);
 });
 
 test('validateProductForm - passes with valid data', () => {
@@ -345,7 +345,7 @@ test('validateProductForm - fails with invalid price', () => {
     images: ['image1.jpg'],
   });
   assertFalse(validation.isValid);
-  assertTrue(validation.errors.price);
+  assertTrue(!!validation.errors.price);
 });
 
 test('validateCheckoutForm - passes with valid data', () => {

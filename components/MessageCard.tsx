@@ -4,21 +4,10 @@ import Link from 'next/link';
 import Avatar from '@/components/Avatar';
 import { Circle } from 'lucide-react';
 import { memo, useMemo } from 'react';
+import type { Conversation } from '@/types';
 
 interface MessageCardProps {
-  conversation: {
-    user: {
-      _id: string;
-      name: string;
-      email: string;
-      avatar?: string;
-    };
-    lastMessage: {
-      content: string;
-      createdAt: string;
-    };
-    unreadCount: number;
-  };
+  conversation: Conversation;
   isOnline: boolean;
 }
 
@@ -36,7 +25,7 @@ const MessageCard = memo(function MessageCard({ conversation, isOnline }: Messag
 
   return (
     <Link
-      href={`/buyer/messages?userId=${conversation.user._id}`}
+      href={`/buyer/messages?userId=${conversation.user.id}`}
       className="block rounded-lg border bg-card p-4 hover:bg-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       aria-label={`Chat with ${conversation.user.name}${isOnline ? ', online' : ''}${unreadLabel}. Last message: ${lastMessagePreview}`}
     >
@@ -54,7 +43,7 @@ const MessageCard = memo(function MessageCard({ conversation, isOnline }: Messag
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold truncate" id={`conversation-${conversation.user._id}-name`}>
+              <h3 className="font-semibold truncate" id={`conversation-${conversation.user.id}-name`}>
                 {conversation.user.name}
               </h3>
               {isOnline && (
@@ -74,7 +63,7 @@ const MessageCard = memo(function MessageCard({ conversation, isOnline }: Messag
           </div>
           <p
             className="text-sm text-muted-foreground truncate"
-            aria-labelledby={`conversation-${conversation.user._id}-name`}
+            aria-labelledby={`conversation-${conversation.user.id}-name`}
           >
             {lastMessagePreview}
           </p>

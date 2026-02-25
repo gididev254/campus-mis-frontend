@@ -85,7 +85,7 @@ export const registrationSchema = z.object({
     .min(1, 'Please confirm your password'),
   role: z
     .enum(['buyer', 'seller'], {
-      required_error: 'Please select a role',
+      error: 'Please select a role',
     }),
   location: z
     .string()
@@ -191,7 +191,7 @@ export const productSchema = z.object({
     .min(1, 'Category is required'),
   condition: z
     .enum(['new', 'like-new', 'good', 'fair'], {
-      required_error: 'Please select a condition',
+      error: 'Please select a condition',
     }),
   location: z
     .string()

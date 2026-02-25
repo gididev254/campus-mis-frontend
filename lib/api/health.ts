@@ -28,7 +28,7 @@ export interface BasicHealthResponse {
 }
 
 // Detailed health check response
-export interface DetailedHealthResponse extends BasicHealthResponse {
+export interface DetailedHealthResponse extends Omit<BasicHealthResponse, 'database' | 'memory'> {
   node_version: string;
   platform: string;
   architecture: string;
@@ -44,16 +44,16 @@ export interface DetailedHealthResponse extends BasicHealthResponse {
     port: number;
     stats: DatabaseStats | null;
   };
-  sockets: {
-    activeConnections: number;
-    totalConnections: number;
-  };
   memory: {
     heapUsed: string;
     heapTotal: string;
     rss: string;
     external: string;
     arrayBuffers: string;
+  };
+  sockets: {
+    activeConnections: number;
+    totalConnections: number;
   };
   cpu: {
     usage: {

@@ -84,4 +84,4 @@ export const toast = {
 };
 
 // Re-export types from sonner if needed
-export type { ToastT, PromiseT } from 'sonner';
+export type { ToastT } from 'sonner';

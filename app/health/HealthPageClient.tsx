@@ -121,7 +121,7 @@ export default function HealthPageClient() {
           </Button>
           <Button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            variant={autoRefresh ? 'default' : 'outline'}
+            variant={autoRefresh ? 'primary' : 'outline'}
           >
             {autoRefresh ? 'Auto: ON' : 'Auto: OFF'}
           </Button>

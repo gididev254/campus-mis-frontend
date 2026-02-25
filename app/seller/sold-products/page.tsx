@@ -84,10 +84,8 @@ function SoldProductsPageContent() {
       router.push('/seller/products');
     } catch (error: unknown) {
       console.error('Failed to re-list product:', error);
-        toast.error('Failed to re-list product.');
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || 'Failed to re-list product');
-      toast.error(error.response?.data?.message || 'Failed to re-list product');
     } finally {
       setRelisting(null);
     }

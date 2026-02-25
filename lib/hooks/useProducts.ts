@@ -178,7 +178,7 @@ export function useUpdateProduct() {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
 
       // Invalidate seller products queries
-      queryClient.invalidateQueries({ queryKey: productKeys.seller(response.data.product.seller) });
+      queryClient.invalidateQueries({ queryKey: productKeys.seller(response.data.product.seller._id) });
     },
   });
 }

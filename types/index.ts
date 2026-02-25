@@ -105,6 +105,7 @@ export interface AuthResponse {
   message: string;
   token: string;
   user: User;
+  forcePasswordChange?: boolean;
 }
 
 export interface PaginationResponse<T> {
@@ -162,15 +163,10 @@ export interface Cart {
 }
 
 // Wishlist Types
-export interface WishlistItem {
-  product: Product;
-  addedAt: string;
-}
-
 export interface Wishlist {
   _id: string;
   user: string;
-  items: WishlistItem[];
+  products: Product[];
   createdAt: string;
   updatedAt: string;
 }
@@ -186,11 +182,22 @@ export interface ShippingAddress {
 
 // Conversation Types
 export interface Conversation {
-  _id: string;
-  participant: User;
-  lastMessage?: Message;
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+    email: string;
+    averageRating?: number;
+  };
+  lastMessage: {
+    sender: string;
+    receiver: string;
+    product?: any;
+    content: string;
+    isRead: boolean;
+    createdAt: string;
+  };
   unreadCount: number;
-  updatedAt: string;
 }
 
 // Notification Types
@@ -316,6 +323,6 @@ export interface ApiError {
 
 // Token Queue Types (for JWT refresh)
 export interface FailedQueueItem {
-  resolve: (value?: string | null) => void;
-  reject: (reason?: Error) => void;
+  resolve: (value: string | PromiseLike<string>) => void;
+  reject: (reason?: any) => void;
 }

@@ -11,20 +11,7 @@ import Button from '@/components/ui/Button';
 import { MessageListSkeleton } from '@/components/ui/skeleton';
 import MessageCard from '@/components/MessageCard';
 import { toast } from '@/components/ui/Toaster';
-
-interface Conversation {
-  user: {
-    _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  lastMessage: {
-    content: string;
-    createdAt: string;
-  };
-  unreadCount: number;
-}
+import type { Conversation, Message } from '@/types';
 
 export default function MessagesPage() {
   const router = useRouter();
@@ -69,7 +56,7 @@ export default function MessagesPage() {
         const otherUserId = senderId === currentUserId ? receiverId : senderId;
 
         // Check if conversation already exists
-        const existingIndex = prevConversations.findIndex((c) => c.user._id === otherUserId);
+        const existingIndex = prevConversations.findIndex((c) => c.user.id === otherUserId);
 
         if (existingIndex !== -1) {
           // Update existing conversation
@@ -77,7 +64,11 @@ export default function MessagesPage() {
           updated[existingIndex] = {
             ...updated[existingIndex],
             lastMessage: {
+              sender: message.sender._id,
+              receiver: message.receiver._id,
+              product: message.product,
               content: message.content,
+              isRead: message.isRead,
               createdAt: message.createdAt,
             },
             unreadCount: senderId === currentUserId ? 0 : unreadCount,
@@ -150,8 +141,8 @@ export default function MessagesPage() {
         ) : (
           <div className="space-y-2">
             {conversations.map((conversation) => {
-              const isOnline = onlineUsers.has(conversation.user._id);
-              return <MessageCard key={conversation.user._id} conversation={conversation} isOnline={isOnline} />;
+              const isOnline = onlineUsers.has(conversation.user.id);
+              return <MessageCard key={conversation.user.id} conversation={conversation} isOnline={isOnline} />;
             })}
           </div>
         )}

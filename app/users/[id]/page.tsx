@@ -9,6 +9,7 @@ import { productsAPI } from '@/lib/api/products';
 import { formatPrice, formatDate } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import ProductGrid from '@/components/ProductGrid';
+import ProductCard from '@/components/ProductCard';
 import type { User as UserType, Product, Review } from '@/types';
 import { toast } from '@/components/ui/Toaster';
 

@@ -371,7 +371,7 @@ function AdminProductsContent() {
                               {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                             </span>
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConditionBadge(
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConditionBadgeColor(
                                 product.condition
                               )}`}
                             >

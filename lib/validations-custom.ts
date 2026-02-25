@@ -438,39 +438,6 @@ export const validateProductForm = (data: {
 };
 
 /**
- * Validates checkout form
- */
-export const validateCheckoutForm = (data: {
-  phoneNumber: string;
-  shippingAddress: {
-    street: string;
-    building: string;
-    room: string;
-  };
-}) => {
-  const errors: Record<string, string> = {};
-
-  // Phone validation
-  const phoneResult = validatePhone(data.phoneNumber);
-  if (!phoneResult.isValid) errors.phoneNumber = phoneResult.error!;
-
-  // Shipping address validation
-  const streetResult = validateRequired(data.shippingAddress.street, 'Street address');
-  if (!streetResult.isValid) errors.street = streetResult.error!;
-
-  const buildingResult = validateRequired(data.shippingAddress.building, 'Building/floor');
-  if (!buildingResult.isValid) errors.building = buildingResult.error!;
-
-  const roomResult = validateRequired(data.shippingAddress.room, 'Room number');
-  if (!roomResult.isValid) errors.room = roomResult.error!;
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
-};
-
-/**
  * Validates contact form
  */
 export const validateContactForm = (data: {

@@ -136,12 +136,7 @@ function CartPageContent() {
 
     const phoneNumber = user?.phone || '';
     if (!phoneNumber) {
-      toast.error('Please update your phone number in your profile', {
-        action: {
-          label: 'Update Profile',
-          onClick: () => router.push('/profile')
-        }
-      });
+      toast.error('Please update your phone number in your profile');
       return;
     }
 
@@ -172,12 +167,7 @@ function CartPageContent() {
 
       await clearCart();
 
-      toast.success(
-        `Checkout successful! ${response.data.orderCount} order(s) created. Please check your phone for M-Pesa prompt.`,
-        {
-          description: `Total: ${formatPrice(response.data.totalAmount)}`
-        }
-      );
+      toast.success(`Checkout successful! ${response.data.orderCount} order(s) created. Total: ${formatPrice(response.data.totalAmount)}. Please check your phone for M-Pesa prompt.`);
 
       router.push(`/buyer/orders?session=${response.data.checkoutSessionId}`);
     } catch (error: unknown) {

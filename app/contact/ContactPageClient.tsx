@@ -62,7 +62,6 @@ export default function ContactPageClient() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Name"
-                    name="name"
                     placeholder="John Doe"
                     error={errors.name?.message}
                     required
@@ -71,7 +70,6 @@ export default function ContactPageClient() {
                   <Input
                     label="Email"
                     type="email"
-                    name="email"
                     placeholder="john@example.com"
                     error={errors.email?.message}
                     required
@@ -82,7 +80,6 @@ export default function ContactPageClient() {
 
                 <Input
                   label="Subject"
-                  name="subject"
                   placeholder="How can we help?"
                   error={errors.subject?.message}
                   required

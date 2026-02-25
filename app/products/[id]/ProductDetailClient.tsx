@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ProductImage from '@/components/ProductImage';
+import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 import {
   ArrowLeft,

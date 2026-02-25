@@ -14,12 +14,6 @@ import { ProductCardSkeleton } from '@/components/ui/skeleton';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
 import { toast } from '@/components/ui/Toaster';
 
-interface WishlistItem {
-  _id: string;
-  product: Product;
-  addedAt: string;
-}
-
 export default function WishlistPage() {
   return (
     <ClientErrorBoundary>
@@ -32,7 +26,7 @@ function WishlistPageContent() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [wishlist, setWishlist] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<Set<string>>(new Set());
   const [successMessage, setSuccessMessage] = useState('');
@@ -41,7 +35,7 @@ function WishlistPageContent() {
   const fetchWishlist = useCallback(async () => {
     try {
       const res = await wishlistAPI.getWishlist();
-      setWishlist(res.data.data?.items || []);
+      setWishlist(res.data.data?.products || []);
     } catch (error) {
       console.error('Failed to fetch wishlist:', error);
         toast.error('Failed to load wishlist. Please try again.');
@@ -67,7 +61,7 @@ function WishlistPageContent() {
 
     try {
       await wishlistAPI.removeWishlist(productId);
-      setWishlist((prev) => prev.filter((item) => item.product._id !== productId));
+      setWishlist((prev) => prev.filter((item) => item._id !== productId));
       setSuccessMessage('Item removed from wishlist');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
@@ -142,7 +136,7 @@ function WishlistPageContent() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlist.map((item) => {
-              const isRemoving = removing.has(item.product._id);
+              const isRemoving = removing.has(item._id);
 
               return (
                 <div
@@ -151,11 +145,11 @@ function WishlistPageContent() {
                 >
                   {/* Product Image */}
                   <div className="relative aspect-square bg-muted">
-                    {item.product.images?.[0] ? (
-                      <Link href={`/products/${item.product._id}`}>
+                    {item.images?.[0] ? (
+                      <Link href={`/products/${item._id}`}>
                         <Image
-                          src={item.product.images[0]}
-                          alt={item.product.title}
+                          src={item.images[0]}
+                          alt={item.title}
                           fill
                           className="object-cover"
                         />
@@ -167,7 +161,7 @@ function WishlistPageContent() {
                     )}
                     {/* Remove Button */}
                     <Button
-                      onClick={() => handleRemoveFromWishlist(item.product._id)}
+                      onClick={() => handleRemoveFromWishlist(item._id)}
                       disabled={isRemoving}
                       variant="danger"
                       size="sm"
@@ -184,44 +178,40 @@ function WishlistPageContent() {
 
                   {/* Product Details */}
                   <div className="p-4">
-                    <Link href={`/products/${item.product._id}`}>
+                    <Link href={`/products/${item._id}`}>
                       <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2 mb-2">
-                        {item.product.title}
+                        {item.title}
                       </h3>
                     </Link>
 
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm text-muted-foreground">
-                        {item.product.category?.name || 'Uncategorized'}
+                        {item.category?.name || 'Uncategorized'}
                       </p>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.product.condition === 'new'
+                        item.condition === 'new'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : item.product.condition === 'like-new'
+                          : item.condition === 'like-new'
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                          : item.product.condition === 'good'
+                          : item.condition === 'good'
                           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                           : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                       }`}>
-                        {item.product.condition.replace('-', ' ')}
+                        {item.condition.replace('-', ' ')}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-bold text-primary">
-                        {formatPrice(item.product.price)}
+                        {formatPrice(item.price)}
                       </p>
-                      <Link href={`/products/${item.product._id}`}>
+                      <Link href={`/products/${item._id}`}>
                         <Button size="sm" variant="outline">
                           <ShoppingBag className="h-4 w-4 mr-1" />
                           View
                         </Button>
                       </Link>
                     </div>
-
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Added {new Date(item.addedAt).toLocaleDateString()}
-                    </p>
                   </div>
                 </div>
               );

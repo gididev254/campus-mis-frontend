@@ -56,7 +56,7 @@ export default function ProductsPageClient() {
     return `${totalProducts} ${totalProducts === 1 ? 'product' : 'products'} found`;
   }, [totalProducts]);
 
-  if (loading && page === 1) {
+  if (loadingProducts && page === 1) {
     return (
       <div className="container mx-auto px-4 py-8">
         <PageHeaderSkeleton showSubtitle showActions={false} />
@@ -126,7 +126,7 @@ export default function ProductsPageClient() {
       </div>
 
       {/* Products Grid */}
-      {products.length === 0 && !loading ? (
+      {products.length === 0 && !loadingProducts ? (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-2xl font-semibold mb-2">No products found</h2>
@@ -139,7 +139,7 @@ export default function ProductsPageClient() {
         </div>
       ) : (
         <>
-          <ProductGrid products={products} loading={loading && page > 1} />
+          <ProductGrid products={products} loading={loadingProducts && page > 1} />
 
           {/* Pagination */}
           {totalPages > 1 && (

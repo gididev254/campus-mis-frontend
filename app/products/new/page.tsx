@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { productsAPI } from '@/lib/api/products';
 import { categoriesAPI } from '@/lib/api/categories';
@@ -18,18 +19,27 @@ import Input from '@/components/ui/Input';
 import { toast } from '@/components/ui/Toaster';
 
 // Extend the schema for the form (images are handled separately)
-const productFormSchema = productSchema.pick({
-  title: true,
-  description: true,
-  price: true,
-  category: true,
-  condition: true,
-  location: true,
-  isNegotiable: true,
-});
+const productFormSchema = productSchema
+  .pick({
+    title: true,
+    description: true,
+    price: true,
+    category: true,
+    condition: true,
+    location: true,
+  })
+  .extend({
+    isNegotiable: z.boolean().default(false),
+  });
 
-type ProductFormValues = Omit<z.infer<typeof productFormSchema>, 'price'> & {
-  price: string; // Keep as string for input
+type ProductFormValues = {
+  title: string;
+  description: string;
+  price: string;
+  category: string;
+  condition: 'new' | 'like-new' | 'good' | 'fair';
+  location: string;
+  isNegotiable?: boolean;
 };
 
 export default function NewProductPage() {
@@ -126,7 +136,7 @@ export default function NewProductPage() {
       formDataToSend.append('category', data.category);
       formDataToSend.append('condition', data.condition);
       formDataToSend.append('location', data.location);
-      formDataToSend.append('isNegotiable', data.isNegotiable.toString());
+      formDataToSend.append('isNegotiable', (data.isNegotiable ?? false).toString());
 
       images.forEach((url) => {
         formDataToSend.append('images', url);

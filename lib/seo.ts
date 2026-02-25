@@ -71,7 +71,7 @@ export function generateMetadata(options: {
     publisher: SITE_CONFIG.name,
 
     openGraph: {
-      type,
+      type: type === 'product' ? 'website' : type,
       title: fullTitle,
       description,
       url,

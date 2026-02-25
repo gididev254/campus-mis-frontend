@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useCallback, memo } from 'react';
 import { useSocket } from '@/contexts/SocketContext';
-import { useToast } from '@/contexts/ToastContext';
+import { toast } from 'sonner';
 
 /**
  * ConnectionToast - Toast notifications for connection state changes
@@ -23,7 +23,6 @@ const ConnectionToast = memo(function ConnectionToast() {
   const previousConnectedState = useRef<boolean>(isConnected);
   const hasShownReconnectToast = useRef<boolean>(false);
   const hasShownErrorToast = useRef<boolean>(false);
-  const { showError, showWarning, showSuccess } = useToast();
 
   // Stable reset function
   const resetFlags = useCallback(() => {
@@ -36,9 +35,9 @@ const ConnectionToast = memo(function ConnectionToast() {
     if (!isConnected && !isReconnecting && connectionError) {
       // Don't show if we were just initializing
       if (previousConnectedState.current && !hasShownErrorToast.current) {
-        showError(
+        toast.error(
           `${connectionError}. Real-time features like messaging and notifications are unavailable. Reload page to retry.`,
-          Infinity
+          { duration: Infinity }
         );
         hasShownErrorToast.current = true;
         hasShownReconnectToast.current = false;
@@ -56,7 +55,7 @@ const ConnectionToast = memo(function ConnectionToast() {
         message += ` (${queuedMessageCount} message${queuedMessageCount > 1 ? 's' : ''} queued)`;
       }
 
-      showWarning(message, Infinity);
+      toast.warning(message, { duration: Infinity });
       hasShownReconnectToast.current = true;
       hasShownErrorToast.current = false;
     }
@@ -69,7 +68,7 @@ const ConnectionToast = memo(function ConnectionToast() {
         if (queuedMessageCount > 0) {
           message += ` Sending ${queuedMessageCount} queued message${queuedMessageCount > 1 ? 's' : ''}...`;
         }
-        showSuccess(message, 3000);
+        toast.success(message, { duration: 3000 });
         // Reset flags after successful connection
         setTimeout(resetFlags, 3000);
       } else {
@@ -80,7 +79,7 @@ const ConnectionToast = memo(function ConnectionToast() {
 
     // Update previous state
     previousConnectedState.current = isConnected;
-  }, [isConnected, isReconnecting, connectionError, reconnectAttempt, queuedMessageCount, showError, showWarning, showSuccess, resetFlags]);
+  }, [isConnected, isReconnecting, connectionError, reconnectAttempt, queuedMessageCount, resetFlags]);
 
   return null; // This component doesn't render anything
 });

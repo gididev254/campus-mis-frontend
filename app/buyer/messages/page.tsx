@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
@@ -10,14 +10,27 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { toast } from '@/lib/toast';
 import type { Message, User } from '@/types';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
 
 export default function BuyerMessagesPage() {
   return (
     <ClientErrorBoundary>
-      <BuyerMessagesPageContent />
+      <Suspense fallback={<MessagesLoading />}>
+        <BuyerMessagesPageContent />
+      </Suspense>
     </ClientErrorBoundary>
+  );
+}
+
+function MessagesLoading() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    </div>
   );
 }
 
@@ -256,7 +269,7 @@ function BuyerMessagesPageContent() {
                   alt={otherUser.name}
                   size="md"
                   showOnlineStatus
-                  isOnline={isUserOnline}
+                  isOnline={isUserOnline ?? undefined}
                 />
               )}
               <div>

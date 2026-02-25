@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Loader2, MapPin } from 'lucide-react';
@@ -15,8 +15,20 @@ import type { Product, ShippingAddress } from '@/types';
 export default function CheckoutPage() {
   return (
     <ClientErrorBoundary>
-      <CheckoutPageContent />
+      <Suspense fallback={<CheckoutLoading />}>
+        <CheckoutPageContent />
+      </Suspense>
     </ClientErrorBoundary>
+  );
+}
+
+function CheckoutLoading() {
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <div className="max-w-2xl mx-auto flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    </div>
   );
 }
 
