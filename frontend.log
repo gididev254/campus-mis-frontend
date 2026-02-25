@@ -1,0 +1,79 @@
+
+> campus-market-frontend@1.0.0 dev
+> next dev
+
+   ▲ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ ✓ Ready in 21.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 5s (64 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 25.6s (853 modules)
+ ✓ Compiled in 5.4s (378 modules)
+ ○ Compiling /forgot-password ...
+ ✓ Compiled /register in 8.6s (863 modules)
+ ✓ Compiled in 3.4s (863 modules)
+ ✓ Compiled in 137ms
+ ○ Compiling / ...
+ ✓ Compiled / in 7.1s (878 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1859ms (895 modules)
+ ○ Compiling /admin/users ...
+ ✓ Compiled /admin/users in 1803ms (918 modules)
+ ○ Compiling /change-password ...
+ ✓ Compiled /change-password in 3.9s (931 modules)
+ ○ Compiling /products ...
+ ✓ Compiled /products in 4.1s (945 modules)
+ ○ Compiling /help ...
+ ✓ Compiled /help in 3.8s (956 modules)
+ ○ Compiling /terms ...
+ ✓ Compiled /terms in 1975ms (960 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1808ms (525 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1093ms (527 modules)
+ ○ Compiling /admin/users ...
+ ✓ Compiled /admin/users in 660ms (532 modules)
+ ○ Compiling /admin/categories ...
+ ✓ Compiled /admin/categories in 5.7s (950 modules)
+ ✓ Compiled in 3.8s (436 modules)
+ ✓ Compiled in 986ms (436 modules)
+ ✓ Compiled in 1926ms (521 modules)
+ ✓ Compiled in 1269ms (436 modules)
+ ✓ Compiled in 2.2s (436 modules)
+ ✓ Compiled in 3.9s (437 modules)
+ ✓ Compiled in 1329ms (437 modules)
+ ✓ Compiled in 1178ms (437 modules)
+ ✓ Compiled in 827ms (437 modules)
+ ✓ Compiled in 900ms (437 modules)
+ ✓ Compiled in 4.6s (958 modules)
+ ✓ Compiled in 664ms (437 modules)
+ ✓ Compiled in 3.5s (960 modules)
+ ✓ Compiled in 2.1s (960 modules)
+ ✓ Compiled in 2.7s (965 modules)
+ ✓ Compiled in 2.8s (951 modules)
+ ✓ Compiled in 1386ms (951 modules)
+ ✓ Compiled in 1087ms (951 modules)
+ ✓ Compiled in 1111ms (951 modules)
+ ✓ Compiled in 1714ms (951 modules)
+ ✓ Compiled in 1026ms (951 modules)
+ ✓ Compiled in 989ms (951 modules)
+ ✓ Compiled in 949ms (951 modules)
+ ✓ Compiled in 1002ms (951 modules)
+ ✓ Compiled in 1266ms (965 modules)
+ ✓ Compiled in 1242ms (965 modules)
+ ✓ Compiled in 2.6s (965 modules)
+ ✓ Compiled in 763ms (440 modules)
+ ✓ Compiled in 2.7s (965 modules)
+ ✓ Compiled in 1701ms (965 modules)
+ ✓ Compiled in 622ms (440 modules)
+ ✓ Compiled in 1615ms (440 modules)
+ ✓ Compiled in 746ms (440 modules)
+ ✓ Compiled in 651ms (440 modules)
+ ✓ Compiled in 623ms (440 modules)
+ ✓ Compiled in 599ms (440 modules)
+ ✓ Compiled in 539ms (440 modules)
+ ✓ Compiled in 855ms (440 modules)
+ ✓ Compiled in 781ms (440 modules)

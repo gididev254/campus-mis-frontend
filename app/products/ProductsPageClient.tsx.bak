@@ -1,0 +1,17 @@
+import { Metadata } from 'next';
+import ProductsPageClient from './ProductsPageClient';
+
+export const metadata: Metadata = {
+  title: 'Browse Products - Embuni Campus Market',
+  description: 'Browse and discover products from sellers across campus. Find textbooks, electronics, and more.',
+  keywords: ['products', 'browse', 'campus shopping', 'textbooks', 'electronics', 'student marketplace'],
+  openGraph: {
+    title: 'Browse Products - Embuni Campus Market',
+    description: 'Browse and discover products from sellers across campus. Find textbooks, electronics, and more.',
+    type: 'website',
+  },
+};
+
+export default function ProductsPage() {
+  return <ProductsPageClient />;
+}

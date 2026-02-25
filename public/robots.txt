@@ -1,0 +1,20 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /messages/
+Disallow: /notifications/
+Disallow: /profile/
+Disallow: /buyer/
+Disallow: /seller/
+Disallow: /change-password/
+Disallow: /forgot-password/
+Disallow: /login/
+Disallow: /register/
+
+# Sitemap
+Sitemap: https://embuni-campus-market.com/sitemap.xml
