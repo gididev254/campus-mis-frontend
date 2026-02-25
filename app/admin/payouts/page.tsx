@@ -332,10 +332,10 @@ function PayoutLedgerContent() {
                                   </div>
                                 </td>
                                 <td className="py-3 px-3">
-                                  {'mpesaTransactionId' in order && order.mpesaTransactionId ? (
+                                  {'mpesaTransactionId' in order && (order as any).mpesaTransactionId ? (
                                     <div className="flex items-center space-x-1">
                                       <Receipt className="h-3 w-3 text-green-600" />
-                                      <span className="font-mono text-xs">{order.mpesaTransactionId}</span>
+                                      <span className="font-mono text-xs">{(order as any).mpesaTransactionId}</span>
                                     </div>
                                   ) : (
                                     <span className="text-muted-foreground text-xs">N/A</span>
