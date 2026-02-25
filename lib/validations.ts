@@ -31,11 +31,11 @@ export {
   validateLoginForm,
   validateRegistrationForm,
   validateProductForm,
-  validateCheckoutForm,
   validateContactForm,
   validateProfileUpdateForm,
   validatePasswordChangeForm,
   validateCategoryForm,
+  validateCheckoutForm,
 
   // Types
   type ValidationResult,
@@ -263,3 +263,30 @@ export const categorySchema = z.object({
 });
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
+
+// Checkout form schema (M-Pesa payment)
+export const checkoutSchema = z.object({
+  phoneNumber: z
+    .string()
+    .min(1, 'Phone number is required')
+    .regex(/^(\+254|0)?[17]\d{8}$/, 'Invalid phone number. Use format +254XXXXXXXXX or 07XXXXXXXX / 01XXXXXXXX'),
+  shippingAddress: z.object({
+    street: z
+      .string()
+      .min(1, 'Street address is required')
+      .min(3, 'Street address must be at least 3 characters')
+      .max(100, 'Street address must be less than 100 characters'),
+    building: z
+      .string()
+      .min(1, 'Building/floor is required')
+      .min(2, 'Building/floor must be at least 2 characters')
+      .max(50, 'Building/floor must be less than 50 characters'),
+    room: z
+      .string()
+      .min(1, 'Room number is required')
+      .min(1, 'Room number is required')
+      .max(20, 'Room number must be less than 20 characters'),
+  }),
+});
+
+export type CheckoutFormData = z.infer<typeof checkoutSchema>;

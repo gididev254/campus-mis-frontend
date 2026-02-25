@@ -626,4 +626,86 @@ export const CartItemSkeleton: React.FC<CartItemSkeletonProps> = ({ count = 3 })
   );
 };
 
+/**
+ * Skeleton for notifications list
+ */
+interface NotificationListSkeletonProps {
+  count?: number;
+}
+
+export const NotificationListSkeleton: React.FC<NotificationListSkeletonProps> = ({ count = 5 }) => {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="p-4 rounded-lg border bg-card">
+          <div className="flex items-start space-x-4">
+            {/* Icon skeleton */}
+            <div className="w-5 h-5 bg-muted rounded animate-pulse flex-shrink-0 mt-1" />
+
+            {/* Content skeleton */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 space-y-1">
+                  <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                  <div className="h-3 bg-muted rounded w-full animate-pulse" />
+                  <div className="h-3 bg-muted rounded w-2/3 animate-pulse" />
+                  <div className="flex items-center space-x-2">
+                    <div className="h-3 bg-muted rounded w-16 animate-pulse" />
+                  </div>
+                </div>
+                {/* Actions skeleton */}
+                <div className="flex items-center space-x-1">
+                  <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                  <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Skeleton for individual notification card
+ */
+interface NotificationCardSkeletonProps {
+  count?: number;
+}
+
+export const NotificationCardSkeleton: React.FC<NotificationCardSkeletonProps> = ({ count = 1 }) => {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="relative p-4 rounded-lg border bg-card hover:bg-accent transition-colors">
+          <div className="flex items-start space-x-4">
+            {/* Icon */}
+            <div className="w-5 h-5 bg-muted rounded animate-pulse flex-shrink-0 mt-1" />
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 space-y-1">
+                  <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                  <div className="h-3 bg-muted rounded w-full animate-pulse" />
+                  <div className="h-3 bg-muted rounded w-2/3 animate-pulse" />
+                  <div className="flex items-center space-x-2">
+                    <div className="h-3 bg-muted rounded w-16 animate-pulse" />
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="flex items-center space-x-1">
+                  <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                  <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
 export default Skeleton;

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   generateCloudinaryBlurDataURL,
@@ -84,7 +84,7 @@ interface OptimizedImageProps {
  *   fallback={<div className="w-10 h-10 bg-primary/10 rounded-full" />}
  * />
  */
-export default function OptimizedImage({
+const OptimizedImage = memo(function OptimizedImage({
   src,
   alt,
   width,
@@ -104,8 +104,8 @@ export default function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  // Calculate aspect ratio class
-  const getAspectRatioClass = () => {
+  // Memoize aspect ratio class to prevent recalculation
+  const aspectRatioClass = useMemo(() => {
     if (fill && aspectRatio) {
       switch (aspectRatio) {
         case 'square':
@@ -123,21 +123,23 @@ export default function OptimizedImage({
       }
     }
     return '';
-  };
+  }, [fill, aspectRatio]);
 
-  const aspectRatioClass = getAspectRatioClass();
+  // Memoize blur data URL to prevent recalculation
+  const finalBlurDataURL = useMemo(() => {
+    const generatedBlurDataURL = useCloudinaryBlur
+      ? generateCloudinaryBlurDataURL(src)
+      : null;
+    return blurDataURL || generatedBlurDataURL || DEFAULT_BLUR_DATA_URL;
+  }, [src, blurDataURL, useCloudinaryBlur]);
 
-  // Generate blur data URL
-  const generatedBlurDataURL = useCloudinaryBlur
-    ? generateCloudinaryBlurDataURL(src)
-    : null;
-  const finalBlurDataURL = blurDataURL || generatedBlurDataURL || DEFAULT_BLUR_DATA_URL;
+  // Memoize adaptive quality to prevent recalculation
+  const adaptiveQuality = useMemo(() => {
+    return quality || getImageQuality(85);
+  }, [quality]);
 
-  // Adaptive quality based on connection
-  const adaptiveQuality = quality || getImageQuality(85);
-
-  // Default fallback UI
-  const defaultFallback = (
+  // Memoize default fallback UI
+  const defaultFallback = useMemo(() => (
     <div
       className={cn(
         'flex items-center justify-center bg-muted text-muted-foreground',
@@ -159,13 +161,18 @@ export default function OptimizedImage({
         />
       </svg>
     </div>
-  );
+  ), [className]);
+
+  // Stable handlers
+  const handleLoad = useCallback(() => setIsLoading(false), []);
+  const handleError = useCallback(() => setHasError(true), []);
 
   if (hasError) {
     return <>{fallback || defaultFallback}</>;
   }
 
-  const imageProps = {
+  // Memoize image props to prevent recalculation
+  const imageProps = useMemo(() => ({
     src,
     alt,
     quality: adaptiveQuality,
@@ -190,11 +197,11 @@ export default function OptimizedImage({
           ),
         }),
     style: { objectFit },
-    onError: () => setHasError(true),
-    onLoad: () => setIsLoading(false),
+    onError: handleError,
+    onLoad: handleLoad,
     placeholder: 'blur' as const,
     blurDataURL: finalBlurDataURL,
-  };
+  }), [src, alt, adaptiveQuality, priority, sizes, fill, width, height, className, isLoading, handleError, handleLoad, finalBlurDataURL, objectFit]);
 
   return (
     <div className={cn(fill ? 'relative' : '', aspectRatioClass)}>
@@ -206,4 +213,6 @@ export default function OptimizedImage({
       <Image {...imageProps} />
     </div>
   );
-}
+});
+
+export default OptimizedImage;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Loader2, MapPin } from 'lucide-react';
@@ -65,7 +65,7 @@ function CheckoutPageContent() {
     fetchProduct();
   }, [productId, isAuthenticated, router]);
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = useCallback(async () => {
     if (!product) return;
 
     // Validate phone number
@@ -107,7 +107,7 @@ function CheckoutPageContent() {
     } finally {
       setProcessing(false);
     }
-  };
+  }, [product, phoneNumber, shippingAddress, quantity, router]);
 
   if (loading) {
     return (

@@ -104,7 +104,7 @@ function AdminCategoriesContent() {
     return () => clearTimeout(timer);
   }, [searchTerm, fetchCategories]);
 
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(() => {
     reset({
       name: '',
       description: '',
@@ -113,9 +113,9 @@ function AdminCategoriesContent() {
       isActive: true,
     });
     setShowCreateModal(true);
-  };
+  }, [reset]);
 
-  const openEditModal = (category: Category & { productCount: number }) => {
+  const openEditModal = useCallback((category: Category & { productCount: number }) => {
     setSelectedCategory(category);
     reset({
       name: category.name,
@@ -125,9 +125,9 @@ function AdminCategoriesContent() {
       isActive: category.isActive,
     });
     setShowEditModal(true);
-  };
+  }, [reset]);
 
-  const closeModals = () => {
+  const closeModals = useCallback(() => {
     setShowCreateModal(false);
     setShowEditModal(false);
     setSelectedCategory(null);
@@ -138,9 +138,9 @@ function AdminCategoriesContent() {
       image: '',
       isActive: true,
     });
-  };
+  }, [reset]);
 
-  const onSubmit = async (data: CategoryFormData) => {
+  const onSubmit = useCallback(async (data: CategoryFormData) => {
     try {
       setSubmitting(true);
 
@@ -190,9 +190,9 @@ function AdminCategoriesContent() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [showEditModal, selectedCategory, categories, closeModals, setError]);
 
-  const handleDeleteCategory = async (categoryId: string) => {
+  const handleDeleteCategory = useCallback(async (categoryId: string) => {
     const category = categories.find(c => c._id === categoryId);
 
     if (category && category.productCount > 0) {
@@ -221,9 +221,9 @@ function AdminCategoriesContent() {
     } finally {
       setDeletingCategory(null);
     }
-  };
+  }, [categories]);
 
-  const toggleCategoryStatus = async (category: Category & { productCount: number }) => {
+  const toggleCategoryStatus = useCallback(async (category: Category & { productCount: number }) => {
     try {
       await categoriesAPI.updateCategory(category._id, {
         isActive: !category.isActive,
@@ -243,7 +243,7 @@ function AdminCategoriesContent() {
       toast.error('Failed to update category status. Please try again.');
       setMessage({ type: 'error', text: 'Failed to update category status. Please try again.' });
     }
-  };
+  }, [categories]);
 
   if (!isAdmin) {
     return (

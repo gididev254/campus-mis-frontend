@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback, memo } from 'react';
 import { useSocket } from '@/contexts/SocketContext';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -18,12 +18,18 @@ import { useToast } from '@/contexts/ToastContext';
  * - State tracking to avoid duplicate toasts
  * - User-friendly error messages
  */
-export default function ConnectionToast() {
+const ConnectionToast = memo(function ConnectionToast() {
   const { isConnected, isReconnecting, connectionError, reconnectAttempt, queuedMessageCount } = useSocket();
   const previousConnectedState = useRef<boolean>(isConnected);
   const hasShownReconnectToast = useRef<boolean>(false);
   const hasShownErrorToast = useRef<boolean>(false);
   const { showError, showWarning, showSuccess } = useToast();
+
+  // Stable reset function
+  const resetFlags = useCallback(() => {
+    hasShownErrorToast.current = false;
+    hasShownReconnectToast.current = false;
+  }, []);
 
   useEffect(() => {
     // Handle disconnection
@@ -65,20 +71,18 @@ export default function ConnectionToast() {
         }
         showSuccess(message, 3000);
         // Reset flags after successful connection
-        setTimeout(() => {
-          hasShownErrorToast.current = false;
-          hasShownReconnectToast.current = false;
-        }, 3000);
+        setTimeout(resetFlags, 3000);
       } else {
         // Reset flags on successful connection
-        hasShownErrorToast.current = false;
-        hasShownReconnectToast.current = false;
+        resetFlags();
       }
     }
 
     // Update previous state
     previousConnectedState.current = isConnected;
-  }, [isConnected, isReconnecting, connectionError, reconnectAttempt, showError, showWarning, showSuccess]);
+  }, [isConnected, isReconnecting, connectionError, reconnectAttempt, queuedMessageCount, showError, showWarning, showSuccess, resetFlags]);
 
   return null; // This component doesn't render anything
-}
+});
+
+export default ConnectionToast;

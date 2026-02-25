@@ -1,6 +1,18 @@
-'use client';
+import { Metadata } from 'next';
+import ProfilePageClient from './ProfilePageClient';
+import { generateMetadata } from '@/lib/seo';
 
-import { useEffect, useState } from 'react';
+export const metadata: Metadata = generateMetadata({
+  title: 'My Profile',
+  description: 'Manage your profile settings, personal information, and preferences on Embuni Campus Market',
+  keywords: ['profile', 'account settings', 'user profile', 'campus market'],
+  canonical: '/profile',
+  noIndex: true, // Don't index user profile pages
+});
+
+export default function ProfilePage() {
+  return <ProfilePageClient />;
+}
 import { useRouter } from 'next/navigation';
 import { Loader2, User as UserIcon, Mail, Phone, MapPin, Edit2, CheckCircle, AlertCircle, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -69,7 +81,7 @@ export default function ProfilePage() {
     }
   }, [user, resetProfile]);
 
-  const onProfileUpdate = async (data: ProfileUpdateFormData) => {
+  const onProfileUpdate = useCallback(async (data: ProfileUpdateFormData) => {
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -88,9 +100,9 @@ export default function ProfilePage() {
       toast.error(message);
       setProfileError('root', { type: 'manual', message });
     }
-  };
+  }, [authAPI, updateUser, setProfileError]);
 
-  const onPasswordChange = async (data: PasswordChangeFormData) => {
+  const onPasswordChange = useCallback(async (data: PasswordChangeFormData) => {
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -112,9 +124,9 @@ export default function ProfilePage() {
       toast.error(message);
       setPasswordError('root', { type: 'manual', message });
     }
-  };
+  }, [authAPI, resetPassword, setPasswordError]);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditing(false);
     if (user) {
       resetProfile({
@@ -124,13 +136,13 @@ export default function ProfilePage() {
       });
     }
     setErrorMessage('');
-  };
+  }, [user, resetProfile]);
 
-  const handleCancelPassword = () => {
+  const handleCancelPassword = useCallback(() => {
     setShowPasswordForm(false);
     resetPassword();
     setErrorMessage('');
-  };
+  }, [resetPassword]);
 
   if (loading) {
     return (

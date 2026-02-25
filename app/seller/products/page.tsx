@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -45,7 +45,7 @@ function SellerProductsPageContent() {
     fetchProducts();
   }, [isAuthenticated, user, router, filter]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await productsAPI.getSellerProducts(user?._id || '');
       let filteredProducts = res.data.data || [];
@@ -61,9 +61,9 @@ function SellerProductsPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?._id, filter]);
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = useCallback(async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     setDeleting(productId);
@@ -80,7 +80,7 @@ function SellerProductsPageContent() {
     } finally {
       setDeleting(null);
     }
-  };
+  }, [products]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

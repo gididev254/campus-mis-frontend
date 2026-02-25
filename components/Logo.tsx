@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { DEFAULT_BLUR_DATA_URL } from '@/lib/imageUtils';
 
 interface LogoProps {
@@ -12,13 +12,20 @@ interface LogoProps {
   showText?: boolean;
 }
 
-export default function Logo({ width = 45, height = 45, className = '', showText = true }: LogoProps) {
+const Logo = memo(function Logo({ width = 45, height = 45, className = '', showText = true }: LogoProps) {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Memoize logo source to prevent recalculation
+  const logoSrc = useMemo(() => {
+    if (!mounted) return '/logo.svg';
+    const isDark = theme === 'dark' || resolvedTheme === 'dark';
+    return isDark ? '/logo-dark.svg' : '/logo.svg';
+  }, [mounted, theme, resolvedTheme]);
 
   if (!mounted) {
     // Show light mode logo during SSR/hydration to avoid flicker
@@ -36,9 +43,6 @@ export default function Logo({ width = 45, height = 45, className = '', showText
       </div>
     );
   }
-
-  const isDark = theme === 'dark' || resolvedTheme === 'dark';
-  const logoSrc = isDark ? '/logo-dark.svg' : '/logo.svg';
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
@@ -66,4 +70,6 @@ export default function Logo({ width = 45, height = 45, className = '', showText
       )}
     </div>
   );
-}
+});
+
+export default Logo;

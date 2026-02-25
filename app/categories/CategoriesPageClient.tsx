@@ -8,6 +8,7 @@ import { categoriesAPI } from '@/lib/api/categories';
 import { CategoryCardSkeleton, PageHeaderSkeleton } from '@/components/ui/skeleton';
 import Button from '@/components/ui/Button';
 import type { Category } from '@/types';
+import { toast } from '@/components/ui/Toaster';
 
 interface CategoryWithCount extends Category {
   productCount: number;
@@ -43,14 +44,9 @@ export default function CategoriesPageClient() {
         <div className="max-w-6xl mx-auto">
           <PageHeaderSkeleton showSubtitle showActions={false} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
-            <CategoryCardSkeleton />
+            {Array.from({ length: 8 }).map((_, i) => (
+              <CategoryCardSkeleton key={i} />
+            ))}
           </div>
         </div>
       </div>

@@ -1,10 +1,41 @@
 import { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embuni-campus-market.com';
+// URL configuration
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embuni-campus-market.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+// Fetch dynamic data for sitemap
+async function fetchProducts() {
+  try {
+    const response = await fetch(`${API_URL}/api/products`, {
+      next: { revalidate: 3600 }, // Revalidate every hour
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.data?.products || data.data || [];
+  } catch (error) {
+    console.error('Error fetching products for sitemap:', error);
+    return [];
+  }
+}
+
+async function fetchCategories() {
+  try {
+    const response = await fetch(`${API_URL}/api/categories`, {
+      next: { revalidate: 86400 }, // Revalidate daily
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.data?.categories || data.data || [];
+  } catch (error) {
+    console.error('Error fetching categories for sitemap:', error);
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static routes
-  const routes = [
+  const staticRoutes = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -59,7 +90,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     },
+    {
+      url: `${baseUrl}/login`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/register`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    },
   ];
 
-  return routes;
+  // Fetch dynamic data
+  const [products, categories] = await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+  ]);
+
+  // Product routes
+  const productRoutes = products.map((product: any) => ({
+    url: `${baseUrl}/products/${product._id}`,
+    lastModified: new Date(product.updatedAt || product.createdAt),
+    changeFrequency: 'daily' as const,
+    priority: 0.8,
+  }));
+
+  // Category routes
+  const categoryRoutes = categories.map((category: any) => ({
+    url: `${baseUrl}/categories/${category.slug}`,
+    lastModified: new Date(category.updatedAt || category.createdAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  // Combine all routes
+  return [...staticRoutes, ...productRoutes, ...categoryRoutes];
 }

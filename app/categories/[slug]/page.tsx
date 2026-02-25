@@ -1,21 +1,42 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Loader2, Tag, ArrowLeft, Package, SlidersHorizontal } from 'lucide-react';
+import { Metadata } from 'next';
 import { categoriesAPI } from '@/lib/api/categories';
-import { productsAPI } from '@/lib/api/products';
-import type { Category, Product } from '@/types';
-import ProductGrid from '@/components/ProductGrid';
-import Button from '@/components/ui/Button';
-import { ProductCardSkeleton } from '@/components/ui/skeleton';
-import { toast } from '@/components/ui/Toaster';
-import ProductCard from '@/components/ProductCard';
+import { generateCategoryMetadata, generateBreadcrumbSchema } from '@/lib/seo';
+import StructuredData from '@/components/StructuredData';
+import CategoryDetailClient from './CategoryDetailClient';
 
-export default function CategoryDetailPage() {
-  const params = useParams();
-  const router = useRouter();
+interface PageProps {
+  params: { slug: string };
+}
+
+// Generate dynamic metadata for category pages
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  try {
+    const response = await categoriesAPI.getCategories();
+    const category = response.data.categories.find(
+      (cat: any) => cat.slug === params.slug
+    );
+
+    if (!category) {
+      return {
+        title: 'Category Not Found | Embuni Campus Market',
+      };
+    }
+
+    return generateCategoryMetadata({
+      name: category.name,
+      description: category.description,
+      slug: category.slug,
+    });
+  } catch (error) {
+    return {
+      title: 'Category | Embuni Campus Market',
+    };
+  }
+}
+
+export default function CategoryDetailPage({ params }: PageProps) {
+  return <CategoryDetailClient slug={params.slug} />;
+}
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

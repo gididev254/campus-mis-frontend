@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
@@ -109,7 +109,7 @@ function BuyerMessagesPageContent() {
     }
   }, [socket, isConnected, targetUserId, user?._id]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const res = await messagesAPI.getConversation(targetUserId as string);
       setMessages(res.data.data || []);
@@ -124,9 +124,9 @@ function BuyerMessagesPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [targetUserId]);
 
-  const handleTyping = () => {
+  const handleTyping = useCallback(() => {
     if (!socket || !isConnected || !targetUserId) return;
 
     // Use emitWithQueue for typing indicators
@@ -143,9 +143,9 @@ function BuyerMessagesPageContent() {
         emitWithQueue('typing:stop', { userId: targetUserId });
       }
     }, 2000);
-  };
+  }, [socket, isConnected, targetUserId, emitWithQueue]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
@@ -191,16 +191,45 @@ function BuyerMessagesPageContent() {
     } finally {
       setSending(false);
     }
-  };
+  }, [newMessage, user, otherUser, targetUserId, socket, isConnected]);
 
   const isUserOnline = otherUser && onlineUsers.has(otherUser._id);
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading messages...</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-muted rounded-full animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-8 bg-muted rounded w-48 animate-pulse" />
+                <div className="h-4 bg-muted rounded w-32 animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          {/* Messages skeleton */}
+          <div className="rounded-lg border bg-card p-6">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-muted animate-pulse flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                    <div className="h-3 bg-muted rounded w-full animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input skeleton */}
+            <div className="flex space-x-3 mt-6">
+              <div className="h-10 bg-muted rounded flex-1 animate-pulse" />
+              <div className="h-10 w-12 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
         </div>
       </div>
     );

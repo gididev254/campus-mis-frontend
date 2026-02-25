@@ -602,3 +602,36 @@ export const validateCategoryForm = (data: {
     errors,
   };
 };
+
+/**
+ * Validates checkout form (M-Pesa payment)
+ */
+export const validateCheckoutForm = (data: {
+  phoneNumber: string;
+  shippingAddress: {
+    street: string;
+    building: string;
+    room: string;
+  };
+}) => {
+  const errors: Record<string, string> = {};
+
+  // Phone validation
+  const phoneResult = validatePhone(data.phoneNumber);
+  if (!phoneResult.isValid) errors.phoneNumber = phoneResult.error!;
+
+  // Shipping address validation
+  const streetResult = validateLength(data.shippingAddress.street, 3, 100, 'Street address');
+  if (!streetResult.isValid) errors.street = streetResult.error!;
+
+  const buildingResult = validateLength(data.shippingAddress.building, 2, 50, 'Building/floor');
+  if (!buildingResult.isValid) errors.building = buildingResult.error!;
+
+  const roomResult = validateMinLength(data.shippingAddress.room, 1, 'Room number');
+  if (!roomResult.isValid) errors.room = roomResult.error!;
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+};

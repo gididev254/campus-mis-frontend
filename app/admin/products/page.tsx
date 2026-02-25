@@ -102,7 +102,7 @@ function AdminProductsContent() {
     }
   }, [searchTerm, page, fetchProducts]);
 
-  const handleUpdateStatus = async (productId: string, status: 'available' | 'sold' | 'pending') => {
+  const handleUpdateStatus = useCallback(async (productId: string, status: 'available' | 'sold' | 'pending') => {
     try {
       setUpdatingProduct(productId);
 
@@ -135,9 +135,9 @@ function AdminProductsContent() {
     } finally {
       setUpdatingProduct(null);
     }
-  };
+  }, [products]);
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = useCallback(async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return;
     }
@@ -156,7 +156,7 @@ function AdminProductsContent() {
     } finally {
       setDeletingProduct(null);
     }
-  };
+  }, [products]);
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {

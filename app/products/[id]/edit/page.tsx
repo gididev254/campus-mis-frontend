@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -107,7 +107,7 @@ export default function EditProductPage() {
     }
   }, [params.id, user, reset]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -147,13 +147,13 @@ export default function EditProductPage() {
 
     setImages([...images, ...uploadedUrls]);
     setUploading(false);
-  };
+  }, [images]);
 
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     setImages(images.filter((_, i) => i !== index));
-  };
+  }, [images]);
 
-  const onSubmit = async (data: ProductFormValues) => {
+  const onSubmit = useCallback(async (data: ProductFormValues) => {
     // Validate images
     if (images.length === 0) {
       setFormError('root', { type: 'manual', message: 'At least one image is required' });
@@ -187,7 +187,7 @@ export default function EditProductPage() {
       setError(errorMessage);
       setFormError('root', { type: 'manual', message: errorMessage });
     }
-  };
+  }, [images, params.id, router, setFormError]);
 
   if (loading) {
     return (

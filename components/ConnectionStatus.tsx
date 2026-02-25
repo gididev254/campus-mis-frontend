@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { useSocket } from '@/contexts/SocketContext';
 import { Wifi, WifiOff, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
  * - Shows reconnection attempt count
  * - Displays error messages
  */
-export default function ConnectionStatus() {
+const ConnectionStatus = memo(function ConnectionStatus() {
   const { isConnected, isReconnecting, connectionError, reconnectAttempt, manualReconnect, queuedMessageCount } = useSocket();
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -36,39 +36,54 @@ export default function ConnectionStatus() {
     return null;
   }
 
-  const getStatusText = () => {
+  // Memoize status text to prevent recalculation
+  const statusText = useMemo(() => {
     if (isConnected) return 'Online';
     if (isReconnecting) {
       return reconnectAttempt > 0 ? `Reconnecting... (${reconnectAttempt})` : 'Reconnecting...';
     }
     if (connectionError) return 'Offline';
     return 'Connecting...';
-  };
+  }, [isConnected, isReconnecting, connectionError, reconnectAttempt]);
 
-  const getStatusIcon = () => {
+  // Memoize status icon to prevent recalculation
+  const statusIcon = useMemo(() => {
     if (isConnected) return <Wifi className="h-3.5 w-3.5" />;
     if (isReconnecting) return <Loader2 className="h-3.5 w-3.5 animate-spin" />;
     return <WifiOff className="h-3.5 w-3.5" />;
-  };
+  }, [isConnected, isReconnecting]);
 
-  const getStatusColor = () => {
+  // Memoize status color to prevent recalculation
+  const statusColor = useMemo(() => {
     if (isConnected) return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800';
     if (isReconnecting) return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
     return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
-  };
+  }, [isConnected, isReconnecting]);
+
+  // Stable toggle handler
+  const handleToggle = useCallback(() => {
+    setShowTooltip(prev => !prev);
+  }, []);
+
+  // Stable manual reconnect handler
+  const handleManualReconnect = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    manualReconnect();
+    setShowTooltip(false);
+  }, [manualReconnect]);
 
   return (
     <div className="relative">
       <div
         className={cn(
           'flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-all duration-300 border cursor-pointer hover:scale-105',
-          getStatusColor()
+          statusColor
         )}
-        onClick={() => setShowTooltip(!showTooltip)}
+        onClick={handleToggle}
         title={connectionError || 'Click for connection details'}
       >
-        {getStatusIcon()}
-        <span className="hidden sm:inline font-medium">{getStatusText()}</span>
+        {statusIcon}
+        <span className="hidden sm:inline font-medium">{statusText}</span>
       </div>
 
       {/* Tooltip with detailed information */}
@@ -127,11 +142,7 @@ export default function ConnectionStatus() {
                     </ul>
                   </div>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      manualReconnect();
-                      setShowTooltip(false);
-                    }}
+                    onClick={handleManualReconnect}
                     disabled={isReconnecting}
                     className={cn(
                       'w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
@@ -160,4 +171,6 @@ export default function ConnectionStatus() {
       )}
     </div>
   );
-}
+});
+
+export default ConnectionStatus;

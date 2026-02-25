@@ -9,6 +9,7 @@ import { useSocket } from '@/contexts/SocketContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatRelativeTime } from '@/lib/utils';
 import Button from '@/components/ui/Button';
+import { NotificationListSkeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/Toaster';
 
 interface Notification {
@@ -252,10 +253,22 @@ export default function NotificationsPage() {
 
         {/* Notifications List */}
         {loading ? (
-          <div className="text-center py-16">
-            <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Loading notifications...</p>
-          </div>
+          <>
+            {/* Header skeleton */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-8 bg-muted rounded w-48 animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-24 animate-pulse" />
+                </div>
+              </div>
+              <div className="h-9 bg-muted rounded w-24 animate-pulse" />
+            </div>
+
+            {/* Notifications skeleton */}
+            <NotificationListSkeleton count={5} />
+          </>
         ) : notifications.length === 0 ? (
           <div className="text-center py-16">
             <Bell className="h-24 w-24 mx-auto text-muted-foreground mb-4" />

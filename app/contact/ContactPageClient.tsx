@@ -1,82 +1,33 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
-import { toast } from '@/lib/toast';
+import { toast } from '@/components/ui/Toaster';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { contactSchema, type ContactFormData } from '@/lib/validations';
 
 export default function ContactPageClient() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    mode: 'onBlur',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successMessage, setSuccessMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSuccessMessage('');
-
+  const onSubmit = async (data: ContactFormData) => {
     try {
-      // Simulate API call
+      // Simulate API call (replace with actual API when available)
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setSuccessMessage('Thank you for your message! We\'ll get back to you within 24 hours.');
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      toast.success('Message sent successfully!');
+      toast.success('Thank you for your message! We\'ll get back to you within 24 hours.');
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      const errorMessage = 'Failed to send message. Please try again.';
+      setError('root', { type: 'manual', message: errorMessage });
+      toast.error(errorMessage);
     }
   };
 
@@ -102,27 +53,20 @@ export default function ContactPageClient() {
             </CardHeader>
             <CardContent>
               {errors.root && (
-                <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm" role="alert" aria-live="assertive">
                   {errors.root.message}
                 </div>
               )}
 
-              {successMessage && (
-                <div className="mb-4 p-3 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-sm">
-                  {successMessage}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate aria-label="Contact form">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Name"
                     name="name"
                     placeholder="John Doe"
                     error={errors.name?.message}
-                    value={formData.name}
-                    onChange={handleChange}
                     required
+                    {...register('name')}
                   />
                   <Input
                     label="Email"
@@ -130,9 +74,9 @@ export default function ContactPageClient() {
                     name="email"
                     placeholder="john@example.com"
                     error={errors.email?.message}
-                    value={formData.email}
-                    onChange={handleChange}
                     required
+                    autoComplete="email"
+                    {...register('email')}
                   />
                 </div>
 
@@ -141,19 +85,17 @@ export default function ContactPageClient() {
                   name="subject"
                   placeholder="How can we help?"
                   error={errors.subject?.message}
-                  value={formData.subject}
-                  onChange={handleChange}
                   required
+                  {...register('subject')}
                 />
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5 text-foreground">
+                  <label htmlFor="message" className="block text-sm font-medium mb-1.5 text-foreground">
                     Message
                   </label>
                   <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
+                    id="message"
+                    {...register('message')}
                     rows={6}
                     required
                     className={`w-full px-4 py-2.5 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none ${
@@ -162,7 +104,7 @@ export default function ContactPageClient() {
                     placeholder="Type your message here..."
                   />
                   {errors.message && (
-                    <p className="mt-1 text-sm text-destructive">{errors.message}</p>
+                    <p className="mt-1 text-sm text-destructive" role="alert">{errors.message.message}</p>
                   )}
                 </div>
 

@@ -1,16 +1,45 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { Users, Package, ShoppingCart, TrendingUp, Settings, Wallet, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI } from '@/lib/api/users';
 import { productsAPI } from '@/lib/api/products';
 import { ordersAPI } from '@/lib/api/orders';
-import { categoriesAPI } from '@/lib/api/categories';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { formatPrice } from '@/lib/utils';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
+
+// Static dashboard links - moved outside component to prevent recreation
+const DASHBOARD_LINKS = [
+  {
+    href: '/admin/users',
+    icon: Users,
+    title: 'Manage Users',
+    description: 'View and manage all users',
+  },
+  {
+    href: '/admin/products',
+    icon: Package,
+    title: 'Manage Products',
+    description: 'View and moderate products',
+  },
+  {
+    href: '/admin/categories',
+    icon: Settings,
+    title: 'Categories',
+    description: 'Manage product categories',
+  },
+  {
+    href: '/admin/payouts',
+    icon: Wallet,
+    title: 'Seller Payouts',
+    description: 'Manage seller payouts and view ledger',
+    customClass: 'border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/20',
+    iconClass: 'text-orange-600',
+  },
+] as const;
 
 function AdminDashboardContent() {
   const { user } = useAuth();
@@ -22,7 +51,8 @@ function AdminDashboardContent() {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = useMemo(() => async () => {
+  // Memoized stats fetcher to prevent re-creation
+  const fetchStats = useCallback(async () => {
     try {
       const [usersRes, productsRes, ordersRes] = await Promise.all([
         usersAPI.getUsers({ limit: 1 }),
@@ -47,6 +77,34 @@ function AdminDashboardContent() {
     fetchStats();
   }, [fetchStats]);
 
+  // Memoize stats display to prevent re-renders
+  const statsCards = useMemo(() => [
+    {
+      title: 'Total Users',
+      value: stats.users,
+      description: 'registered users',
+      icon: Users,
+    },
+    {
+      title: 'Total Products',
+      value: stats.products,
+      description: 'active listings',
+      icon: Package,
+    },
+    {
+      title: 'Total Orders',
+      value: stats.orders,
+      description: 'all orders',
+      icon: ShoppingCart,
+    },
+    {
+      title: 'Revenue',
+      value: formatPrice(stats.revenue),
+      description: 'total revenue',
+      icon: TrendingUp,
+    },
+  ], [stats]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -67,108 +125,37 @@ function AdminDashboardContent() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.users}</div>
-            <p className="text-xs text-muted-foreground">registered users</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.products}</div>
-            <p className="text-xs text-muted-foreground">active listings</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.orders}</div>
-            <p className="text-xs text-muted-foreground">all orders</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatPrice(stats.revenue)}</div>
-            <p className="text-xs text-muted-foreground">total revenue</p>
-          </CardContent>
-        </Card>
+        {statsCards.map((stat) => (
+          <Card key={stat.title}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link href="/admin/users">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Manage Users</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">View and manage all users</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/products">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Package className="h-5 w-5" />
-                <span>Manage Products</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">View and moderate products</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/categories">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Settings className="h-5 w-5" />
-                <span>Categories</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Manage product categories</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/payouts">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Wallet className="h-5 w-5 text-orange-600" />
-                <span>Seller Payouts</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Manage seller payouts and view ledger</p>
-            </CardContent>
-          </Card>
-        </Link>
+        {DASHBOARD_LINKS.map((link) => (
+          <Link key={link.href} href={link.href}>
+            <Card className={`hover:shadow-lg transition-shadow cursor-pointer ${link.customClass || ''}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <link.icon className={`h-5 w-5 ${link.iconClass || ''}`} />
+                  <span>{link.title}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{link.description}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

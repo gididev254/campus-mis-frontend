@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import {
   generateCloudinaryBlurDataURL,
   DEFAULT_BLUR_DATA_URL,
@@ -66,7 +66,7 @@ interface ProductImageProps {
  *   showSkeleton
  * />
  */
-export default function ProductImage({
+const ProductImage = memo(function ProductImage({
   src,
   alt,
   fill = false,
@@ -83,8 +83,14 @@ export default function ProductImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  // Default fallback UI
-  const defaultFallback = (
+  // Memoize blur placeholder to prevent recalculation
+  const blurDataURL = useMemo(() => {
+    if (!src) return DEFAULT_BLUR_DATA_URL;
+    return generateCloudinaryBlurDataURL(src) || generateColoredBlurDataURL(blurColor);
+  }, [src, blurColor]);
+
+  // Memoize fallback UI
+  const defaultFallback = useMemo(() => (
     <div
       className={cn(
         'w-full h-full flex items-center justify-center text-muted-foreground text-sm',
@@ -93,16 +99,17 @@ export default function ProductImage({
     >
       {fallbackText}
     </div>
-  );
+  ), [className, fallbackText]);
+
+  // Stable handlers
+  const handleLoad = useCallback(() => setIsLoading(false), []);
+  const handleError = useCallback(() => setHasError(true), []);
 
   if (!src || hasError) {
     return showFallback ? defaultFallback : null;
   }
 
-  // Generate blur placeholder for Cloudinary images
-  const blurDataURL = generateCloudinaryBlurDataURL(src) || generateColoredBlurDataURL(blurColor);
-
-  const imageProps = {
+  const imageProps = useMemo(() => ({
     src,
     alt,
     ...(priority && { priority }),
@@ -125,11 +132,11 @@ export default function ProductImage({
             className
           ),
         }),
-    onLoad: () => setIsLoading(false),
-    onError: () => setHasError(true),
+    onLoad: handleLoad,
+    onError: handleError,
     placeholder: 'blur' as const,
     blurDataURL: blurDataURL || DEFAULT_BLUR_DATA_URL,
-  };
+  }), [src, alt, priority, sizes, fill, width, height, className, isLoading, handleLoad, handleError, blurDataURL]);
 
   return (
     <>
@@ -141,4 +148,6 @@ export default function ProductImage({
       <Image {...imageProps} />
     </>
   );
-}
+});
+
+export default ProductImage;

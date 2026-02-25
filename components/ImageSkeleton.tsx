@@ -44,7 +44,7 @@ export default function ImageSkeleton({
   return (
     <div
       className={cn(
-        'animate-pulse bg-muted rounded-lg overflow-hidden',
+        'animate-pulse bg-muted rounded-lg overflow-hidden relative',
         aspectRatioClass,
         className
       )}
@@ -52,7 +52,7 @@ export default function ImageSkeleton({
       aria-hidden="true"
     >
       {/* Shimmer effect */}
-      <div className="w-full h-full bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent animate-[shimmer_1.5s_infinite]" />
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent animate-shimmer" />
     </div>
   );
 }
@@ -120,8 +120,8 @@ export function AvatarSkeleton({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'x
  */
 export function BannerSkeleton({ height = 'h-64' }: { height?: string }) {
   return (
-    <div className={cn('animate-pulse bg-muted rounded-lg overflow-hidden', height)} aria-hidden="true">
-      <div className="w-full h-full bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent animate-[shimmer_1.5s_infinite]" />
+    <div className={cn('animate-pulse bg-muted rounded-lg overflow-hidden relative', height)} aria-hidden="true">
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent animate-shimmer" />
     </div>
   );
 }

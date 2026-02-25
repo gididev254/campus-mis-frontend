@@ -2,6 +2,7 @@ import ProductCard from './ProductCard';
 import type { Product } from '@/types';
 import { ProductCardSkeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
+import { memo, useMemo } from 'react';
 
 interface ProductGridProps {
   products: Product[];
@@ -19,27 +20,29 @@ interface ProductGridProps {
  * ProductGrid - A reusable grid layout for displaying products
  * Handles loading states and responsive grid columns
  */
-export default function ProductGrid({
+const ProductGrid = memo(function ProductGrid({
   products,
   loading = false,
   columns = { sm: 1, md: 2, lg: 4, xl: 4 },
   className
 }: ProductGridProps) {
-  // Generate grid classes based on column props
-  const gridClass = cn(
+  // Memoize grid classes to prevent recalculation
+  const gridClass = useMemo(() => cn(
     'grid gap-6',
     `grid-cols-${columns.sm || 1}`,
     columns.md && `md:grid-cols-${columns.md}`,
     columns.lg && `lg:grid-cols-${columns.lg}`,
     columns.xl && `xl:grid-cols-${columns.xl}`,
     className
-  );
+  ), [columns, className]);
 
   // Loading skeleton
   if (loading) {
     return (
       <div className={gridClass}>
-        <ProductCardSkeleton count={8} />
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ProductCardSkeleton key={i} />
+        ))}
       </div>
     );
   }
@@ -61,4 +64,6 @@ export default function ProductGrid({
       ))}
     </div>
   );
-}
+});
+
+export default ProductGrid;

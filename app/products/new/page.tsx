@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import Link from 'next/link';
@@ -73,7 +73,7 @@ export default function NewProductPage() {
     fetchCategories();
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -100,13 +100,13 @@ export default function NewProductPage() {
     } finally {
       setUploading(false);
     }
-  };
+  }, [images, setError]);
 
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     setImages(images.filter((_, i) => i !== index));
-  };
+  }, [images]);
 
-  const onSubmit = async (data: ProductFormValues) => {
+  const onSubmit = useCallback(async (data: ProductFormValues) => {
     // Validate images
     if (images.length === 0) {
       setError('root', { type: 'manual', message: 'At least one image is required' });
@@ -141,7 +141,7 @@ export default function NewProductPage() {
       const err = error as { response?: { data?: { message?: string } } };
       setError('root', { type: 'manual', message: err.response?.data?.message || 'Failed to create product' });
     }
-  };
+  }, [images, setError, router]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">

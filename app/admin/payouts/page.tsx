@@ -347,7 +347,7 @@ function PayoutLedgerContent() {
                                 <td className="py-3 px-3">
                                   <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
-                                    <span>{formatDate(order.createdAt)}</span>
+                                    <span>{formatDate(order.orderDate)}</span>
                                   </div>
                                 </td>
                               </tr>
