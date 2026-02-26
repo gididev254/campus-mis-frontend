@@ -214,29 +214,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       }
     }, 30000);
 
-    // Check for stale connections separately
+    // Check for stale connections (simplified - just log, don't trigger reconnection)
     heartbeatCheckRef.current = setInterval(() => {
       const timeSinceLastHeartbeat = Date.now() - lastHeartbeatRef.current;
       const socketCurrent = socketInstanceRef.current;
 
       if (socketCurrent && socketCurrent.connected && timeSinceLastHeartbeat > 60000) {
-        console.warn('[Socket] Connection appears stale (no heartbeat for 60s), forcing reconnection...');
-        setConnectionError('Connection stale, reconnecting...');
-        setIsReconnecting(true);
-
-        // Force reconnection
-        socketCurrent.disconnect();
-        setTimeout(() => {
-          if (socketInstanceRef.current && !socketInstanceRef.current.connected) {
-            socketInstanceRef.current.connect();
-          }
-        }, 100);
-      } else if (socketCurrent && !socketCurrent.connected && !isReconnecting) {
-        // If not connected and not reconnecting, trigger reconnection
-        console.warn('[Socket] Not connected and not reconnecting, triggering reconnection...');
-        setIsReconnecting(true);
-        setConnectionError('Attempting to reconnect...');
-        socketCurrent.connect();
+        console.warn('[Socket] Connection appears stale (no heartbeat for 60s)');
+        // Socket.io will auto-reconnect if connection is truly stale
+        // Don't force reconnection to avoid loop
       }
     }, 30000);
 
@@ -253,29 +239,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       });
     });
 
-    // Handle tab visibility changes - reconnect when tab becomes visible
+    // Handle tab visibility changes
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Tab became visible
-        if (socketInstance.connected) {
-          console.log('[Socket] Tab visible, connection OK');
-          // Refresh connection state by sending a ping
-          socketInstance.emit('ping');
-          lastHeartbeatRef.current = Date.now();
-        } else if (!isReconnecting) {
-          // Not connected and not reconnecting, trigger reconnection
-          console.log('[Socket] Tab visible and not connected, triggering reconnection...');
-          wasConnectedBeforeHidden.current = false;
-          setIsReconnecting(true);
-          setConnectionError('Reconnecting after tab became visible...');
-          socketInstance.connect();
-        }
-      } else {
-        // Tab became hidden
-        if (socketInstance.connected) {
-          console.log('[Socket] Tab hidden, connection active');
-          wasConnectedBeforeHidden.current = true;
-        }
+      if (document.visibilityState === 'visible' && socketInstance.connected) {
+        // Tab became visible and socket is connected
+        console.log('[Socket] Tab visible, connection OK');
+        socketInstance.emit('ping');
+        lastHeartbeatRef.current = Date.now();
       }
     };
 
@@ -283,14 +253,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     visibilityChangeHandlerRef.current = handleVisibilityChange;
 
-    // Handle window online/offline events
+    // Handle window online/offline events (just for logging)
     const handleOnline = () => {
       console.log('[Socket] Browser back online');
-      if (!socketInstance.connected && !isReconnecting) {
-        setIsReconnecting(true);
-        setConnectionError('Network restored. Reconnecting...');
-        socketInstance.connect();
-      }
+      // Socket.io will auto-reconnect
     };
 
     const handleOffline = () => {
