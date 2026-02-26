@@ -15,7 +15,8 @@ import { toast } from '@/components/ui/Toaster';
 
 interface UsersResponse {
   success: boolean;
-  users: User[];
+  data?: User[];  // Backend returns 'data' not 'users'
+  users?: User[]; // Fallback for frontend compatibility
   pagination: {
     total: number;
     page: number;
@@ -78,7 +79,8 @@ function AdminUsersContent() {
       const response = await usersAPI.getUsers(params);
       const data = response.data as UsersResponse;
 
-      let filteredUsers = data.users;
+      // Backend returns { data, pagination } not { users, pagination }
+      let filteredUsers = (data.data || data.users || []);
 
       // Filter out the current admin user from being edited/deleted
       filteredUsers = filteredUsers.filter(u => u._id !== currentUser?._id);
