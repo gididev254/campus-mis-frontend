@@ -136,9 +136,9 @@ const mergeCartItems = (localItems: CartItem[], serverItems: CartItem[]): CartIt
 };
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   // Memoize cart count and total to prevent recalculation
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);

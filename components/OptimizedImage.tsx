@@ -167,10 +167,6 @@ const OptimizedImage = memo(function OptimizedImage({
   const handleLoad = useCallback(() => setIsLoading(false), []);
   const handleError = useCallback(() => setHasError(true), []);
 
-  if (hasError) {
-    return <>{fallback || defaultFallback}</>;
-  }
-
   // Memoize image props to prevent recalculation
   const imageProps = useMemo(() => ({
     src,
@@ -202,6 +198,10 @@ const OptimizedImage = memo(function OptimizedImage({
     placeholder: 'blur' as const,
     blurDataURL: finalBlurDataURL,
   }), [src, alt, adaptiveQuality, priority, sizes, fill, width, height, className, isLoading, handleError, handleLoad, finalBlurDataURL, objectFit]);
+
+  if (hasError) {
+    return <>{fallback || defaultFallback}</>;
+  }
 
   return (
     <div className={cn(fill ? 'relative' : '', aspectRatioClass)}>

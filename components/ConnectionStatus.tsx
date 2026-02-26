@@ -31,11 +31,6 @@ const ConnectionStatus = memo(function ConnectionStatus() {
     }
   }, [showTooltip]);
 
-  // Don't show anything if not initialized (no connection attempt yet)
-  if (!isConnected && !isReconnecting && !connectionError) {
-    return null;
-  }
-
   // Memoize status text to prevent recalculation
   const statusText = useMemo(() => {
     if (isConnected) return 'Online';
@@ -71,6 +66,11 @@ const ConnectionStatus = memo(function ConnectionStatus() {
     manualReconnect();
     setShowTooltip(false);
   }, [manualReconnect]);
+
+  // Don't show anything if not initialized (no connection attempt yet)
+  if (!isConnected && !isReconnecting && !connectionError) {
+    return null;
+  }
 
   return (
     <div className="relative">

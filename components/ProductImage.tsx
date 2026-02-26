@@ -105,12 +105,9 @@ const ProductImage = memo(function ProductImage({
   const handleLoad = useCallback(() => setIsLoading(false), []);
   const handleError = useCallback(() => setHasError(true), []);
 
-  if (!src || hasError) {
-    return showFallback ? defaultFallback : null;
-  }
-
+  // Memoize image props to prevent recalculation
   const imageProps = useMemo(() => ({
-    src,
+    src: src || '', // Provide fallback for type safety
     alt,
     ...(priority && { priority }),
     sizes,
@@ -137,6 +134,10 @@ const ProductImage = memo(function ProductImage({
     placeholder: 'blur' as const,
     blurDataURL: blurDataURL || DEFAULT_BLUR_DATA_URL,
   }), [src, alt, priority, sizes, fill, width, height, className, isLoading, handleLoad, handleError, blurDataURL]);
+
+  if (!src || hasError) {
+    return showFallback ? defaultFallback : null;
+  }
 
   return (
     <>
