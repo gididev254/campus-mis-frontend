@@ -85,12 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Stable updateUser function with useCallback
   const updateUser = useCallback((data: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...data };
-      setUser(updatedUser);
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  }, [user]);
+      return updatedUser;
+    });
+  }, []);
 
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin: user?.role === 'admin',
     isSeller: user?.role === 'seller' || user?.role === 'admin',
     forcePasswordChange,
-  }), [user, loading, login, register, logout, updateUser, forcePasswordChange]);
+  }), [user, loading, login, register, logout, forcePasswordChange]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
