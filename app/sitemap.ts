@@ -4,31 +4,56 @@ import { MetadataRoute } from 'next';
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://embuni-campus-market.com';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-// Fetch dynamic data for sitemap
+// Fetch dynamic data for sitemap with timeout
+async function fetchWithTimeout(url: string, options = {}, timeout = 5000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 async function fetchProducts() {
   try {
-    const response = await fetch(`${API_URL}/api/products`, {
+    const response = await fetchWithTimeout(`${API_URL}/api/products`, {
       next: { revalidate: 3600 }, // Revalidate every hour
-    });
+    }, 5000); // 5 second timeout
     if (!response.ok) return [];
     const data = await response.json();
     return data.data?.products || data.data || [];
   } catch (error) {
-    console.error('Error fetching products for sitemap:', error);
+    // Silently fail during build time - backend may not be running
+    // Sitemap will include static routes only
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching products for sitemap:', error);
+    }
     return [];
   }
 }
 
 async function fetchCategories() {
   try {
-    const response = await fetch(`${API_URL}/api/categories`, {
+    const response = await fetchWithTimeout(`${API_URL}/api/categories`, {
       next: { revalidate: 86400 }, // Revalidate daily
-    });
+    }, 5000); // 5 second timeout
     if (!response.ok) return [];
     const data = await response.json();
     return data.data?.categories || data.data || [];
   } catch (error) {
-    console.error('Error fetching categories for sitemap:', error);
+    // Silently fail during build time - backend may not be running
+    // Sitemap will include static routes only
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching categories for sitemap:', error);
+    }
     return [];
   }
 }
