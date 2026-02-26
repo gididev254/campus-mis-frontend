@@ -77,8 +77,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const messageQueueRef = useRef<QueuedMessage[]>([]);
   const queueProcessingRef = useRef<boolean>(false);
 
-  const heartbeatCheckRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     if (!isAuthenticated || !user) {
       // Disconnect if not authenticated
