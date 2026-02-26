@@ -76,6 +76,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const messageQueueRef = useRef<QueuedMessage[]>([]);
   const queueProcessingRef = useRef<boolean>(false);
 
+  const heartbeatCheckRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (!isAuthenticated || !user) {
       // Disconnect if not authenticated
@@ -90,6 +92,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
         heartbeatIntervalRef.current = null;
+      }
+      if (heartbeatCheckRef.current) {
+        clearInterval(heartbeatCheckRef.current);
+        heartbeatCheckRef.current = null;
       }
       return;
     }
@@ -125,7 +131,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       setLastHeartbeat(Date.now());
 
       // Process queued messages after connection
-      processMessageQueue();
+      if ((socketInstance as any)._processQueue) {
+        (socketInstance as any)._processQueue();
+      }
     });
 
     socketInstance.on('disconnect', (reason) => {
@@ -200,32 +208,36 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketInstance.emit('pong');
     });
 
-    // Send ping every 30 seconds and check for stale connections
+    // Send ping every 30 seconds
     heartbeatIntervalRef.current = setInterval(() => {
       if (socketInstance.connected) {
         socketInstance.emit('ping');
+      }
+    }, 30000);
 
-        // Check if connection is stale (no pong for 60 seconds)
-        const timeSinceLastHeartbeat = Date.now() - lastHeartbeat;
-        if (timeSinceLastHeartbeat > 60000) {
-          console.warn('[Socket] Connection appears stale (no heartbeat for 60s), forcing reconnection...');
-          setConnectionError('Connection stale, reconnecting...');
-          setIsReconnecting(true);
+    // Check for stale connections separately
+    heartbeatCheckRef.current = setInterval(() => {
+      const timeSinceLastHeartbeat = Date.now() - lastHeartbeat;
+      const socketCurrent = socketInstanceRef.current;
 
-          // Force reconnection
-          socketInstance.disconnect();
-          setTimeout(() => {
-            if (socketInstanceRef.current && !socketInstanceRef.current.connected) {
-              socketInstanceRef.current.connect();
-            }
-          }, 100);
-        }
-      } else if (!isReconnecting) {
+      if (socketCurrent && socketCurrent.connected && timeSinceLastHeartbeat > 60000) {
+        console.warn('[Socket] Connection appears stale (no heartbeat for 60s), forcing reconnection...');
+        setConnectionError('Connection stale, reconnecting...');
+        setIsReconnecting(true);
+
+        // Force reconnection
+        socketCurrent.disconnect();
+        setTimeout(() => {
+          if (socketInstanceRef.current && !socketInstanceRef.current.connected) {
+            socketInstanceRef.current.connect();
+          }
+        }, 100);
+      } else if (socketCurrent && !socketCurrent.connected && !isReconnecting) {
         // If not connected and not reconnecting, trigger reconnection
         console.warn('[Socket] Not connected and not reconnecting, triggering reconnection...');
         setIsReconnecting(true);
         setConnectionError('Attempting to reconnect...');
-        socketInstance.connect();
+        socketCurrent.connect();
       }
     }, 30000);
 
@@ -293,7 +305,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     setSocket(socketInstance);
     socketInstanceRef.current = socketInstance;
 
-    // Process message queue
+    // Process message queue - defined outside to avoid recreation
     const processMessageQueue = async () => {
       if (queueProcessingRef.current || messageQueueRef.current.length === 0) {
         return;
@@ -334,7 +346,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       // If there are more messages, schedule next batch
       if (messageQueueRef.current.length > 0) {
         setTimeout(() => {
-          if (socketInstance.connected) {
+          const socketCurrent = socketInstanceRef.current;
+          if (socketCurrent && socketCurrent.connected) {
             processMessageQueue();
           }
         }, QUEUE_RETRY_DELAY);
@@ -351,6 +364,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
         heartbeatIntervalRef.current = null;
+      }
+      if (heartbeatCheckRef.current) {
+        clearInterval(heartbeatCheckRef.current);
+        heartbeatCheckRef.current = null;
       }
 
       // Remove visibility change listener
@@ -369,7 +386,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       messageQueueRef.current = [];
       setQueuedMessageCount(0);
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated]);
 
   // Message queueing function
   const emitWithQueue = (event: string, data: any) => {
