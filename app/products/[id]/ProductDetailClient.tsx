@@ -50,8 +50,10 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
 
   useEffect(() => {
     const fetchProduct = async () => {
+      console.log('[ProductDetailClient] Fetching product:', { productId, userId: user?._id });
       try {
         const res = await productsAPI.getProduct(productId);
+        console.log('[ProductDetailClient] Product fetched successfully:', { _id: res.data.product?._id, title: res.data.product?.title });
         setProduct(res.data.product);
         setLiked(res.data.product.likes?.includes(user?._id || '') || false);
 
@@ -59,7 +61,8 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
         const relatedRes = await productsAPI.getRelatedProducts(productId);
         setRelatedProducts(relatedRes.data.products);
       } catch (error) {
-        console.error('Failed to fetch product:', error);
+        console.error('[ProductDetailClient] Failed to fetch product:', error);
+        console.log('[ProductDetailClient] Redirecting to /products due to error');
         router.push('/products');
       } finally {
         setLoading(false);

@@ -88,6 +88,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product._id}`}
+      onClick={() => console.log('[ProductCard] Clicked product:', { _id: product._id, title: product.title, href: `/products/${product._id}` })}
       className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-lg"
       aria-label={`View ${product.title}, priced at ${formattedPrice}, located in ${product.location}`}
     >
@@ -161,7 +162,9 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
             <Link
               href={`/users/${product.seller?._id}`}
               className="flex items-center gap-1 hover:text-primary transition-colors rounded-lg px-2 py-1 -mx-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               aria-label={`View seller profile: ${product.seller?.name || 'Unknown Seller'}`}
             >
               <span>{product.seller?.name || 'Unknown Seller'}</span>
