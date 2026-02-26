@@ -69,7 +69,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const [queuedMessageCount, setQueuedMessageCount] = useState(0);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [lastHeartbeat, setLastHeartbeat] = useState<number>(Date.now());
+  const heartbeatCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const lastHeartbeatRef = useRef<number>(Date.now());
   const socketInstanceRef = useRef<Socket | null>(null);
   const visibilityChangeHandlerRef = useRef<(() => void) | null>(null);
   const wasConnectedBeforeHidden = useRef<boolean>(false);
@@ -128,7 +129,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       setIsReconnecting(false);
       setConnectionError(null);
       setReconnectAttempt(0);
-      setLastHeartbeat(Date.now());
+      lastHeartbeatRef.current = Date.now();
 
       // Process queued messages after connection
       if ((socketInstance as any)._processQueue) {
@@ -200,7 +201,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // Heartbeat/Ping mechanism to detect stale connections
     socketInstance.on('pong', () => {
-      setLastHeartbeat(Date.now());
+      lastHeartbeatRef.current = Date.now();
     });
 
     // Listen for server ping and respond with pong
@@ -217,7 +218,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // Check for stale connections separately
     heartbeatCheckRef.current = setInterval(() => {
-      const timeSinceLastHeartbeat = Date.now() - lastHeartbeat;
+      const timeSinceLastHeartbeat = Date.now() - lastHeartbeatRef.current;
       const socketCurrent = socketInstanceRef.current;
 
       if (socketCurrent && socketCurrent.connected && timeSinceLastHeartbeat > 60000) {
@@ -262,7 +263,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           console.log('[Socket] Tab visible, connection OK');
           // Refresh connection state by sending a ping
           socketInstance.emit('ping');
-          setLastHeartbeat(Date.now());
+          lastHeartbeatRef.current = Date.now();
         } else if (!isReconnecting) {
           // Not connected and not reconnecting, trigger reconnection
           console.log('[Socket] Tab visible and not connected, triggering reconnection...');
