@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -353,8 +353,25 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isAuthenticated]);
 
-  // Message queueing function
-  const emitWithQueue = (event: string, data: any) => {
+  // Add message to queue (internal function, not exposed)
+  const addToQueue = (event: string, data: any) => {
+    if (messageQueueRef.current.length >= MAX_QUEUE_SIZE) {
+      console.warn('[Socket] Queue full, dropping oldest message');
+      messageQueueRef.current.shift();
+    }
+
+    messageQueueRef.current.push({
+      event,
+      data,
+      timestamp: Date.now(),
+      retries: 0,
+    });
+
+    setQueuedMessageCount(messageQueueRef.current.length);
+  };
+
+  // Message queueing function (memoized)
+  const emitWithQueue = useCallback((event: string, data: any) => {
     const socketInstance = socketInstanceRef.current;
 
     if (!socketInstance) {
@@ -373,27 +390,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.log(`[Socket] Disconnected, queueing message: ${event}`);
       addToQueue(event, data);
     }
-  };
+  }, []);
 
-  // Add message to queue
-  const addToQueue = (event: string, data: any) => {
-    if (messageQueueRef.current.length >= MAX_QUEUE_SIZE) {
-      console.warn('[Socket] Queue full, dropping oldest message');
-      messageQueueRef.current.shift();
-    }
-
-    messageQueueRef.current.push({
-      event,
-      data,
-      timestamp: Date.now(),
-      retries: 0,
-    });
-
-    setQueuedMessageCount(messageQueueRef.current.length);
-  };
-
-  // Manual reconnect function with retry logic
-  const manualReconnect = () => {
+  // Manual reconnect function (memoized)
+  const manualReconnect = useCallback(() => {
     if (socketInstanceRef.current) {
       console.log('[Socket] Manual reconnection triggered');
 
@@ -418,7 +418,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.log('[Socket] No socket instance, will be created on next render');
       setConnectionError('Initializing connection...');
     }
-  };
+  }, []);
 
   // Process queue when connected
   useEffect(() => {
@@ -430,7 +430,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isConnected]);
 
-  const value = {
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     socket,
     isConnected,
     isReconnecting,
@@ -440,7 +441,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     queuedMessageCount,
     manualReconnect,
     emitWithQueue,
-  };
+  }), [socket, isConnected, isReconnecting, onlineUsers, connectionError, reconnectAttempt, queuedMessageCount, manualReconnect, emitWithQueue]);
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 }

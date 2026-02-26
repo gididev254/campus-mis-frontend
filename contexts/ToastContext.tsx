@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { Toast, type ToastVariant } from '@/components/ui/Toast';
 // import { registerToast } from '@/lib/toast'; // Not needed with sonner
 
@@ -77,13 +77,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [showToast]
   );
 
-  const value = {
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     showToast,
     showSuccess,
     showError,
     showWarning,
     showInfo,
-  };
+  }), [showToast, showSuccess, showError, showWarning, showInfo]);
 
   return (
     <ToastContext.Provider value={value}>

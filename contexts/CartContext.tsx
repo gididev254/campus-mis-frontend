@@ -478,22 +478,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, []); // Run once on mount
 
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
+    cart,
+    cartCount,
+    cartTotal,
+    loading,
+    fetchCart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    mergeCartWithServer,
+    clearLocalCart,
+  }), [cart, cartCount, cartTotal, loading, fetchCart, addToCart, removeFromCart, updateQuantity, clearCart, mergeCartWithServer, clearLocalCart]);
+
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        cartCount,
-        cartTotal,
-        loading,
-        fetchCart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        mergeCartWithServer,
-        clearLocalCart,
-      }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
