@@ -1,25 +1,28 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { messagesAPI } from '@/lib/api/messages';
+import { productsAPI } from '@/lib/api/products';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import Button from '@/components/ui/Button';
 import { MessageListSkeleton } from '@/components/ui/skeleton';
 import MessageCard from '@/components/MessageCard';
 import { toast } from '@/components/ui/Toaster';
-import type { Conversation, Message } from '@/types';
+import type { Conversation, Message, Product } from '@/types';
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, user } = useAuth();
   const { socket, isConnected, onlineUsers } = useSocket();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creatingConversation, setCreatingConversation] = useState(false);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -27,7 +30,7 @@ export default function MessagesPage() {
       setConversations(res.data.conversations || []);
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
-        toast.error('Failed to load conversations.');
+      toast.error('Failed to load conversations.');
     } finally {
       setLoading(false);
     }
@@ -41,6 +44,57 @@ export default function MessagesPage() {
 
     fetchConversations();
   }, [isAuthenticated, router, fetchConversations]);
+
+  // Handle creating a new conversation from query params (e.g., ?userId=...&productId=...)
+  useEffect(() => {
+    const createNewConversation = async () => {
+      const targetUserId = searchParams.get('userId');
+      const productId = searchParams.get('productId');
+
+      if (!targetUserId || !productId || creatingConversation) return;
+
+      // Don't create conversation with yourself
+      if (targetUserId === user?._id) {
+        toast.error('Cannot send message to yourself');
+        router.replace('/messages', { scroll: false });
+        return;
+      }
+
+      setCreatingConversation(true);
+
+      try {
+        // Check if product exists and get details
+        const productRes = await productsAPI.getProduct(productId);
+        const product = productRes.data.product;
+
+        if (!product) {
+          toast.error('Product not found');
+          router.replace('/messages', { scroll: false });
+          return;
+        }
+
+        // Create initial message about the product
+        const initialMessage = `Hi, I'm interested in your product "${product.title}".`;
+        await messagesAPI.sendMessage(targetUserId, initialMessage, productId);
+
+        toast.success('Conversation started!');
+        await fetchConversations();
+
+        // Clear query params
+        router.replace('/messages', { scroll: false });
+      } catch (error: any) {
+        console.error('Failed to create conversation:', error);
+        toast.error(error.response?.data?.message || 'Failed to start conversation');
+        router.replace('/messages', { scroll: false });
+      } finally {
+        setCreatingConversation(false);
+      }
+    };
+
+    if (isAuthenticated && user) {
+      createNewConversation();
+    }
+  }, [searchParams, isAuthenticated, user, fetchConversations, router, creatingConversation]);
 
   // Listen for new messages and conversation updates
   useEffect(() => {
@@ -120,6 +174,12 @@ export default function MessagesPage() {
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>
+            {creatingConversation && (
+              <span className="ml-4 flex items-center text-primary">
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Creating conversation...
+              </span>
+            )}
           </div>
         </div>
 

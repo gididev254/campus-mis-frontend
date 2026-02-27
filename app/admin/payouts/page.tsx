@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Check, Phone, Receipt, Package, User, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Check, Phone, Receipt, Package, User, Calendar, ChevronDown, ChevronRight, MessageCircle, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ordersAPI } from '@/lib/api/orders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -31,6 +32,7 @@ export default function PayoutLedger() {
 }
 
 function PayoutLedgerContent() {
+  const router = useRouter();
   const { user } = useAuth();
   const [sellerGroups, setSellerPayoutGroups] = useState<SellerPayoutGroup[]>([]);
   const [pendingTotal, setPendingTotal] = useState(0);
@@ -117,6 +119,16 @@ function PayoutLedgerContent() {
     });
   };
 
+  const handleMessageSeller = (sellerId: string, sellerName: string, orderIds: string[]) => {
+    // Navigate to messages with the seller - will open existing conversation or create new one
+    router.push(`/messages?userId=${sellerId}&from=payouts`);
+  };
+
+  const handleMessageBuyer = (buyerId: string, buyerName: string) => {
+    // Navigate to messages with the buyer
+    router.push(`/messages?userId=${buyerId}&from=payouts`);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -188,7 +200,7 @@ function PayoutLedgerContent() {
           <CardTitle className="text-lg">Pending Payouts Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
             <div>
               <p className="text-sm text-muted-foreground">Total Sellers to Pay</p>
               <p className="text-3xl font-bold">{sellerGroups.length}</p>
@@ -201,6 +213,15 @@ function PayoutLedgerContent() {
               <p className="text-sm text-muted-foreground">Total Amount to Pay</p>
               <p className="text-3xl font-bold text-green-600">{formatPrice(pendingTotal)}</p>
             </div>
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h4 className="font-semibold text-sm mb-2">💡 Payment Flow Instructions:</h4>
+            <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+              <li><strong>Verify Payment:</strong> Check the M-Pesa Receipt code matches buyer's payment message</li>
+              <li><strong>Message Seller:</strong> Click "Message Seller" to instruct delivery</li>
+              <li><strong>Message Buyer:</strong> Click message icon to confirm they received the goods</li>
+              <li><strong>Mark Paid:</strong> Once confirmed, click "Pay All" to record seller payout</li>
+            </ol>
           </div>
         </CardContent>
       </Card>
@@ -276,9 +297,20 @@ function PayoutLedgerContent() {
                         <h4 className="font-semibold text-sm text-muted-foreground">
                           Order Details ({sellerGroup.orders.length})
                         </h4>
-                        <div className="flex items-center space-x-2 text-sm">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-mono">{sellerGroup.seller.phone}</span>
+                        <div className="flex items-center space-x-3 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-mono">{sellerGroup.seller.phone}</span>
+                          </div>
+                          <Button
+                            onClick={() => handleMessageSeller(sellerGroup.seller._id, sellerGroup.seller.name, sellerGroup.orders.map(o => o.orderId))}
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-3"
+                          >
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            Message Seller
+                          </Button>
                         </div>
                       </div>
 
@@ -288,7 +320,10 @@ function PayoutLedgerContent() {
                             <tr className="border-b">
                               <th className="text-left py-2 px-3 font-medium text-sm">Order</th>
                               <th className="text-left py-2 px-3 font-medium text-sm">Product</th>
-                              <th className="text-left py-2 px-3 font-medium text-sm">Buyer</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">
+                                Buyer
+                                <span className="block text-xs text-muted-foreground font-normal">Click message icon to confirm delivery</span>
+                              </th>
                               <th className="text-left py-2 px-3 font-medium text-sm">M-Pesa Receipt</th>
                               <th className="text-left py-2 px-3 font-medium text-sm">Amount</th>
                               <th className="text-left py-2 px-3 font-medium text-sm">Date</th>
@@ -323,19 +358,37 @@ function PayoutLedgerContent() {
                                   </div>
                                 </td>
                                 <td className="py-3 px-3">
-                                  <div className="flex items-center space-x-2">
-                                    <User className="h-3 w-3 text-muted-foreground" />
-                                    <div>
-                                      <div className="text-sm font-medium">{order.buyer.name}</div>
-                                      <div className="text-xs text-muted-foreground">{order.buyer.email}</div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <User className="h-3 w-3 text-muted-foreground" />
+                                      <div>
+                                        <div className="text-sm font-medium">{order.buyer.name}</div>
+                                        <div className="text-xs text-muted-foreground">{order.buyer.email}</div>
+                                      </div>
                                     </div>
+                                    <Button
+                                      onClick={() => handleMessageBuyer(order.buyer._id, order.buyer.name)}
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0"
+                                      title={`Message ${order.buyer.name}`}
+                                    >
+                                      <Send className="h-3 w-3" />
+                                    </Button>
                                   </div>
                                 </td>
                                 <td className="py-3 px-3">
                                   {'mpesaTransactionId' in order && (order as any).mpesaTransactionId ? (
-                                    <div className="flex items-center space-x-1">
-                                      <Receipt className="h-3 w-3 text-green-600" />
-                                      <span className="font-mono text-xs">{(order as any).mpesaTransactionId}</span>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center space-x-1">
+                                        <Receipt className="h-3 w-3 text-green-600" />
+                                        <span className="font-mono text-xs font-semibold">{(order as any).mpesaTransactionId}</span>
+                                      </div>
+                                      {(order as any).mpesaPhoneNumber && (
+                                        <div className="text-xs text-muted-foreground">
+                                          Paid with: {(order as any).mpesaPhoneNumber}
+                                        </div>
+                                      )}
                                     </div>
                                   ) : (
                                     <span className="text-muted-foreground text-xs">N/A</span>
