@@ -17,7 +17,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI, type WithdrawalRequest } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
 import { toast } from '@/components/ui/Toaster';
 
