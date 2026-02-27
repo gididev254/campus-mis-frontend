@@ -96,16 +96,16 @@ function CartPageContent() {
   // Memoize seller grouping for cart checkout
   const itemsBySeller = useMemo(() => {
     return cart.reduce((acc, item) => {
-      const sellerId = item.product.seller._id;
+      const sellerId = item.product?.seller?._id || 'unknown';
       if (!acc[sellerId]) {
         acc[sellerId] = {
-          sellerName: item.product.seller.name,
+          sellerName: item.product?.seller?.name || 'Unknown Seller',
           items: [],
           total: 0
         };
       }
       acc[sellerId].items.push(item);
-      acc[sellerId].total += item.product.price * item.quantity;
+      acc[sellerId].total += (item.product?.price || 0) * item.quantity;
       return acc;
     }, {} as Record<string, { sellerName: string; items: CartItem[]; total: number }>);
   }, [cart]);
@@ -121,7 +121,7 @@ function CartPageContent() {
 
   // Memoize unique seller count for display
   const uniqueSellerCount = useMemo(() => {
-    return new Set(cart.map(item => item.product.seller._id)).size;
+    return new Set(cart.map(item => item.product?.seller?._id || 'unknown')).size;
   }, [cart]);
 
   const handleCheckoutAll = useCallback(async () => {
@@ -239,8 +239,8 @@ function CartPageContent() {
                     className="relative w-full sm:w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-muted"
                   >
                     <ProductImage
-                      src={item.product.images?.[0]}
-                      alt={item.product.title}
+                      src={item.product?.images?.[0]}
+                      alt={item.product?.title || 'Product'}
                       fill
                     />
                   </Link>
@@ -253,10 +253,10 @@ function CartPageContent() {
                           href={`/products/${item.product._id}`}
                           className="font-semibold hover:text-primary transition-colors"
                         >
-                          {item.product.title}
+                          {item.product?.title || 'Unknown Product'}
                         </Link>
                         <p className="text-sm text-muted-foreground">
-                          Seller: {item.product.seller?.name}
+                          Seller: {item.product?.seller?.name || 'Unknown'}
                         </p>
                       </div>
                       <button
@@ -270,7 +270,7 @@ function CartPageContent() {
 
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-bold text-primary">
-                        {formatPrice(item.product.price)}
+                        {formatPrice(item.product?.price || 0)}
                       </p>
 
                       {/* Quantity controls */}
@@ -306,7 +306,7 @@ function CartPageContent() {
                       <p className="text-sm text-muted-foreground">
                         Subtotal:{' '}
                         <span className="font-semibold text-foreground">
-                          {formatPrice(item.product.price * item.quantity)}
+                          {formatPrice((item.product?.price || 0) * item.quantity)}
                         </span>
                       </p>
                       <Link

@@ -350,7 +350,7 @@ function SellerOrdersPageContent() {
                             <div className="relative h-20 w-20 rounded overflow-hidden bg-muted flex-shrink-0">
                               <Image
                                 src={order.product.images[0]}
-                                alt={order.product.title}
+                                alt={order.product?.title || 'Product'}
                                 fill
                                 className="object-cover"
                               />
@@ -361,7 +361,7 @@ function SellerOrdersPageContent() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <p className="font-semibold">{order.product?.title}</p>
+                            <p className="font-semibold">{order.product?.title || 'Unknown Product'}</p>
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                               {order.product?.description}
                             </p>

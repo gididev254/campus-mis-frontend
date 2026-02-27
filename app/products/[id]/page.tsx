@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: product.description,
       price: product.price,
       images: product.images,
-      category: product.category.name,
+      category: product.category?.name || 'Uncategorized',
       condition: product.condition,
       location: product.location,
       _id: product._id,

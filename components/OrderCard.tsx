@@ -73,14 +73,14 @@ const OrderCard = memo(function OrderCard({ order }: OrderCardProps) {
     <Link
       href={`/buyer/orders/${order._id}`}
       className="block rounded-lg border bg-card p-6 hover:border-primary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      aria-label={`View order ${order.orderNumber} for ${order.product.title}, status: ${order.status}, price: ${formattedPrice}`}
+      aria-label={`View order ${order.orderNumber} for ${order.product?.title || 'Unknown Product'}, status: ${order.status}, price: ${formattedPrice}`}
     >
       <article className="flex gap-4">
         {/* Product Image */}
         <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
           <ProductImage
-            src={order.product.images?.[0]}
-            alt={`Product image for ${order.product.title}`}
+            src={order.product?.images?.[0]}
+            alt={`Product image for ${order.product?.title || 'Product'}`}
             fill
           />
         </div>
@@ -90,7 +90,7 @@ const OrderCard = memo(function OrderCard({ order }: OrderCardProps) {
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold truncate" id={`order-${order._id}-title`}>
-                {order.product.title}
+                {order.product?.title || 'Unknown Product'}
               </h3>
               <p className="text-sm text-muted-foreground">Order #{order.orderNumber}</p>
             </div>

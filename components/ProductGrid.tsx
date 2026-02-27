@@ -59,7 +59,7 @@ const ProductGrid = memo(function ProductGrid({
   // Product grid
   return (
     <div className={gridClass}>
-      {products.map((product) => (
+      {products.filter(Boolean).map((product) => (
         <ProductCard key={product._id} product={product} />
       ))}
     </div>

@@ -245,7 +245,7 @@ function SellerDashboardContent() {
                       {order.status}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{order.product.title}</p>
+                  <p className="text-sm text-muted-foreground">{order.product?.title || 'Unknown Product'}</p>
                   <div className="flex items-center justify-between text-sm">
                     <span>{formatPrice(order.totalPrice)}</span>
                     <span className="text-muted-foreground">{formatRelativeTime(order.createdAt)}</span>

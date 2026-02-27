@@ -72,7 +72,7 @@ function AdminProductsContent() {
             p.title.toLowerCase().includes(term) ||
             p.description.toLowerCase().includes(term) ||
             (p.seller?.name || '').toLowerCase().includes(term) ||
-            p.category.name.toLowerCase().includes(term)
+            (p.category?.name || '').toLowerCase().includes(term)
         );
       }
 
@@ -114,7 +114,9 @@ function AdminProductsContent() {
         formData.append('title', product.title);
         formData.append('description', product.description);
         formData.append('price', product.price.toString());
-        formData.append('category', product.category._id);
+        if (product.category?._id) {
+          formData.append('category', product.category._id);
+        }
         formData.append('condition', product.condition);
         formData.append('location', product.location);
         formData.append('status', status);
@@ -329,7 +331,7 @@ function AdminProductsContent() {
             </CardContent>
           </Card>
         ) : (
-          products.map(product => (
+          products.filter(Boolean).map(product => (
             <Card key={product._id} className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row">
@@ -359,7 +361,7 @@ function AdminProductsContent() {
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                               <span>by {product.seller?.name || 'Unknown'}</span>
                               <span>•</span>
-                              <span>{product.category.name}</span>
+                              <span>{product.category?.name || 'Uncategorized'}</span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2 ml-4">

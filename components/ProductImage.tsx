@@ -8,6 +8,7 @@ import {
   DEFAULT_BLUR_DATA_URL,
   BLUR_COLORS,
   generateColoredBlurDataURL,
+  normalizeImageUrl,
 } from '@/lib/imageUtils';
 import ImageSkeleton from './ImageSkeleton';
 
@@ -83,11 +84,14 @@ const ProductImage = memo(function ProductImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Normalize and validate the image URL
+  const normalizedSrc = useMemo(() => normalizeImageUrl(src), [src]);
+
   // Memoize blur placeholder to prevent recalculation
   const blurDataURL = useMemo(() => {
-    if (!src) return DEFAULT_BLUR_DATA_URL;
-    return generateCloudinaryBlurDataURL(src) || generateColoredBlurDataURL(blurColor);
-  }, [src, blurColor]);
+    if (!normalizedSrc) return DEFAULT_BLUR_DATA_URL;
+    return generateCloudinaryBlurDataURL(normalizedSrc) || generateColoredBlurDataURL(blurColor);
+  }, [normalizedSrc, blurColor]);
 
   // Memoize fallback UI
   const defaultFallback = useMemo(() => (
@@ -107,7 +111,7 @@ const ProductImage = memo(function ProductImage({
 
   // Memoize image props to prevent recalculation
   const imageProps = useMemo(() => ({
-    src: src || '', // Provide fallback for type safety
+    src: normalizedSrc || '', // Use normalized src
     alt,
     ...(priority && { priority }),
     sizes,
@@ -133,9 +137,9 @@ const ProductImage = memo(function ProductImage({
     onError: handleError,
     placeholder: 'blur' as const,
     blurDataURL: blurDataURL || DEFAULT_BLUR_DATA_URL,
-  }), [src, alt, priority, sizes, fill, width, height, className, isLoading, handleLoad, handleError, blurDataURL]);
+  }), [normalizedSrc, alt, priority, sizes, fill, width, height, className, isLoading, handleLoad, handleError, blurDataURL]);
 
-  if (!src || hasError) {
+  if (!normalizedSrc || hasError) {
     return showFallback ? defaultFallback : null;
   }
 

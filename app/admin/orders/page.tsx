@@ -5,8 +5,8 @@ import { Loader2, Search, Filter, ChevronDown, ChevronUp, Eye } from 'lucide-rea
 import { useAuth } from '@/contexts/AuthContext';
 import { ordersAPI } from '@/lib/api/orders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import OrderCard from '@/components/admin/OrderCard';
 import OrderFilters from '@/components/admin/OrderFilters';
@@ -60,7 +60,7 @@ function AdminOrdersPage() {
       }
 
       const response = await ordersAPI.getOrders(params);
-      setOrders(response.data || []);
+      setOrders(response.data?.data || []);
       setTotalPages(response.data?.pagination?.pages || 1);
       setTotal(response.data?.pagination?.total || 0);
     } catch (error) {

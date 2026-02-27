@@ -3,7 +3,7 @@
 import { memo, useState, useCallback } from 'react';
 import { Flag, User, MessageSquare, Calendar, Package, Send, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
 import { formatDate } from '@/lib/utils';

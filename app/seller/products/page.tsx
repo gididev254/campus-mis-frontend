@@ -197,14 +197,14 @@ function SellerProductsPageContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {products.filter(Boolean).map((product) => (
               <div key={product._id} className="rounded-lg border bg-card overflow-hidden">
                 {/* Product Image */}
                 <div className="relative h-48 bg-muted">
                   {product.images?.[0] ? (
                     <Image
                       src={product.images[0]}
-                      alt={product.title}
+                      alt={product.title || 'Product'}
                       fill
                       className="object-cover"
                     />
@@ -214,15 +214,15 @@ function SellerProductsPageContent() {
                     </div>
                   )}
                   <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.status)}`}>
-                    {product.status}
+                    {product.status || 'pending'}
                   </span>
                 </div>
 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold mb-1 line-clamp-1">{product.title}</h3>
-                  <p className="text-2xl font-bold text-primary mb-2">{formatPrice(product.price)}</p>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{product.description}</p>
+                  <h3 className="font-semibold mb-1 line-clamp-1">{product.title || 'Unknown Product'}</h3>
+                  <p className="text-2xl font-bold text-primary mb-2">{formatPrice(product.price || 0)}</p>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{product.description || ''}</p>
 
                   {/* Stats */}
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">

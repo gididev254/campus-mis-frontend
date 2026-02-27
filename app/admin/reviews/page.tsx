@@ -5,8 +5,8 @@ import { Loader2, Search, Trash2, Star, AlertTriangle, CheckCircle, X } from 'lu
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Badge } from '@/components/ui/Badge';
 import ReviewCard from '@/components/admin/ReviewCard';
@@ -45,11 +45,7 @@ function AdminReviewsPage() {
       setTotal(response.data.pagination?.total || 0);
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load reviews',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load reviews');
     } finally {
       setLoading(false);
     }
@@ -64,19 +60,12 @@ function AdminReviewsPage() {
     try {
       setDeletingReview(reviewId);
       await adminAPI.deleteReview(reviewId);
-      toast({
-        title: 'Success',
-        description: 'Review deleted successfully',
-      });
+      toast.success('Review deleted successfully');
       // Refresh reviews
       fetchReviews();
     } catch (error) {
       console.error('Failed to delete review:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete review',
-        variant: 'destructive',
-      });
+      toast.error('Failed to delete review');
     } finally {
       setDeletingReview(null);
     }

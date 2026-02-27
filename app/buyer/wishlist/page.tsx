@@ -135,7 +135,7 @@ function WishlistPageContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlist.map((item) => {
+            {wishlist.filter(Boolean).map((item) => {
               const isRemoving = removing.has(item._id);
 
               return (
@@ -149,7 +149,7 @@ function WishlistPageContent() {
                       <Link href={`/products/${item._id}`}>
                         <Image
                           src={item.images[0]}
-                          alt={item.title}
+                          alt={item.title || 'Product'}
                           fill
                           className="object-cover"
                         />
@@ -180,7 +180,7 @@ function WishlistPageContent() {
                   <div className="p-4">
                     <Link href={`/products/${item._id}`}>
                       <h3 className="font-semibold hover:text-primary transition-colors line-clamp-2 mb-2">
-                        {item.title}
+                        {item.title || 'Unknown Product'}
                       </h3>
                     </Link>
 
@@ -197,13 +197,13 @@ function WishlistPageContent() {
                           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                           : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                       }`}>
-                        {item.condition.replace('-', ' ')}
+                        {item.condition?.replace('-', ' ') || 'Good'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-bold text-primary">
-                        {formatPrice(item.price)}
+                        {formatPrice(item.price || 0)}
                       </p>
                       <Link href={`/products/${item._id}`}>
                         <Button size="sm" variant="outline">

@@ -3,7 +3,7 @@
 import { memo, useCallback } from 'react';
 import { Star, Trash2, AlertTriangle, User, Package, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate } from '@/lib/utils';
 
@@ -72,7 +72,7 @@ const ReviewCard = memo(function ReviewCard({
           </div>
 
           <Button
-            variant="destructive"
+            variant="danger"
             size="sm"
             onClick={onDelete}
             disabled={isDeleting}

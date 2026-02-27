@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useState } from 'react';
 import { X, Package, User, ShoppingCart, Clock, CheckCircle, XCircle, Truck, RefreshCw, MapPin, IndianRupee } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatPrice, formatDate } from '@/lib/utils';
 import type { Order } from '@/types';

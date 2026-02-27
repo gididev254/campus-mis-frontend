@@ -132,3 +132,44 @@ export const BLUR_COLORS = {
   banner: '#d1d5db',
   default: '#e5e7eb',
 } as const;
+
+/**
+ * Validates and normalizes image URL for Next.js Image component
+ * Returns null if the URL is invalid, otherwise returns the normalized URL
+ *
+ * Next.js Image requires:
+ * - Absolute URLs (http:// or https://)
+ * - Relative paths starting with "/"
+ */
+export function normalizeImageUrl(url: string | null | undefined): string | null {
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
+
+  const trimmed = url.trim();
+
+  // Empty string
+  if (!trimmed) {
+    return null;
+  }
+
+  // Absolute URLs are valid
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  // Relative paths must start with /
+  if (trimmed.startsWith('/')) {
+    return trimmed;
+  }
+
+  // If it's a relative path without leading slash, prepend it
+  // This handles cases like "test.jpg" -> "/test.jpg"
+  // Only do this for what looks like a file path (contains extension)
+  if (/^[^/]+\.(jpg|jpeg|png|gif|webp|svg|avif)$/i.test(trimmed)) {
+    return `/${trimmed}`;
+  }
+
+  // Invalid URL format
+  return null;
+}

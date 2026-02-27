@@ -5,8 +5,8 @@ import { Loader2, Search, Flag, MessageSquare, Users, AlertCircle } from 'lucide
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import MessageViewer from '@/components/admin/MessageViewer';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
@@ -43,11 +43,7 @@ function AdminMessagesPage() {
       setTotal(response.data.pagination?.total || 0);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load messages',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load messages');
     } finally {
       setLoading(false);
     }
@@ -62,17 +58,10 @@ function AdminMessagesPage() {
     try {
       setFlaggingMessage(messageId);
       await adminAPI.flagMessage(messageId, { reason });
-      toast({
-        title: 'Success',
-        description: 'Message flagged successfully',
-      });
+      toast.success('Message flagged successfully');
     } catch (error) {
       console.error('Failed to flag message:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to flag message',
-        variant: 'destructive',
-      });
+      toast.error('Failed to flag message');
     } finally {
       setFlaggingMessage(null);
     }

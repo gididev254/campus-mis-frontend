@@ -5,7 +5,7 @@ import { Loader2, TrendingUp, Users, ShoppingCart, Package, DollarSign } from 'l
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Label } from '@/components/ui/Label';
 import { formatPrice } from '@/lib/utils';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       description: product.description,
       price: product.price,
       images: product.images,
-      category: product.category.name,
+      category: product.category?.name || 'Uncategorized',
       condition: product.condition,
       location: product.location,
       _id: product._id,
@@ -53,7 +53,7 @@ export default async function ProductLayout({
       price: product.price,
       images: product.images,
       condition: product.condition,
-      category: product.category.name,
+      category: product.category?.name || 'Uncategorized',
       location: product.location,
       seller: {
         _id: product.seller._id,

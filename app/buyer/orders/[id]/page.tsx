@@ -202,10 +202,10 @@ export default function OrderDetailsPage() {
           <h2 className="text-xl font-semibold mb-4">Product Information</h2>
           <div className="flex gap-4">
             <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-              {order.product.images?.[0] ? (
+              {order.product?.images?.[0] ? (
                 <Image
                   src={order.product.images[0]}
-                  alt={order.product.title}
+                  alt={order.product?.title || 'Product'}
                   fill
                   className="object-cover"
                 />
@@ -216,7 +216,7 @@ export default function OrderDetailsPage() {
               )}
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold">{order.product.title}</h3>
+              <h3 className="font-semibold">{order.product?.title || 'Unknown Product'}</h3>
               <p className="text-sm text-muted-foreground">Seller: {order.seller.name}</p>
               <p className="text-sm text-muted-foreground">Quantity: {order.quantity}</p>
               <p className="text-lg font-bold text-primary mt-2">

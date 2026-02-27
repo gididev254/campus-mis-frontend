@@ -54,15 +54,37 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
       try {
         const res = await productsAPI.getProduct(productId);
         console.log('[ProductDetailClient] Product fetched successfully:', { _id: res.data.product?._id, title: res.data.product?.title });
+
+        if (!res.data.product) {
+          console.error('[ProductDetailClient] Product data is null');
+          router.push('/products');
+          return;
+        }
+
         setProduct(res.data.product);
         setLiked(res.data.product.likes?.includes(user?._id || '') || false);
 
-        // Fetch related products
-        const relatedRes = await productsAPI.getRelatedProducts(productId);
-        setRelatedProducts(relatedRes.data.products);
-      } catch (error) {
+        // Fetch related products (with error handling)
+        try {
+          const relatedRes = await productsAPI.getRelatedProducts(productId);
+          setRelatedProducts(relatedRes.data.products?.filter(Boolean) || []);
+        } catch (relatedError) {
+          console.warn('[ProductDetailClient] Failed to fetch related products:', relatedError);
+          setRelatedProducts([]);
+        }
+      } catch (error: any) {
         console.error('[ProductDetailClient] Failed to fetch product:', error);
-        console.log('[ProductDetailClient] Redirecting to /products due to error');
+
+        // Check if it's a 404 error
+        if (error.response?.status === 404) {
+          console.log('[ProductDetailClient] Product not found, redirecting');
+          toast.error('Product not found');
+          router.push('/products');
+          return;
+        }
+
+        // For other errors, still show the error but don't redirect
+        toast.error(error.response?.data?.message || 'Failed to load product');
         router.push('/products');
       } finally {
         setLoading(false);
@@ -70,7 +92,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
     };
 
     fetchProduct();
-  }, [productId, user]);
+  }, [productId, user, router]);
 
   const handleLike = async () => {
     if (!isAuthenticated) {
@@ -138,13 +160,13 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
   // Generate structured data
   const productSchema = product ? generateProductSchema({
     _id: product._id,
-    title: product.title,
-    description: product.description,
-    price: product.price,
-    images: product.images,
-    condition: product.condition,
-    category: product.category.name,
-    location: product.location,
+    title: product.title || 'Unknown Product',
+    description: product.description || '',
+    price: product.price || 0,
+    images: product.images || [],
+    condition: product.condition || 'good',
+    category: product.category?.name || 'Uncategorized',
+    location: product.location || '',
     seller: product.seller,
     createdAt: product.createdAt,
   }) : null;
@@ -152,7 +174,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
     { name: 'Products', url: '/products' },
-    { name: product.title, url: `/products/${product._id}` },
+    { name: product?.title || 'Product', url: `/products/${product?._id}` },
   ]);
 
   return (
@@ -175,7 +197,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
             <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
               <ProductImage
                 src={product.images?.[selectedImage]}
-                alt={product.title}
+                alt={product.title || 'Product'}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -185,7 +207,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
             {/* Thumbnails */}
             {product.images && product.images.length > 1 && (
               <div className="flex space-x-2 overflow-x-auto">
-                {product.images.map((img, index) => (
+                {product.images.filter(Boolean).map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -268,7 +290,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
             {/* Category & condition */}
             <div className="flex items-center space-x-4">
               <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm">
-                {product.category.name}
+                {product.category?.name || 'Uncategorized'}
               </span>
               <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm capitalize">
                 {product.condition.replace('-', ' ')}
@@ -362,7 +384,7 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
           <section>
             <h2 className="text-2xl font-bold mb-6">Related Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((p) => (
+              {relatedProducts.filter(Boolean).map((p) => (
                 <ProductCard key={p._id} product={p} />
               ))}
             </div>

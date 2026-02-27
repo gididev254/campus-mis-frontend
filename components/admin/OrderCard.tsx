@@ -3,7 +3,7 @@
 import { memo, useCallback } from 'react';
 import { Eye, Package, User, ShoppingCart, Clock, CheckCircle, XCircle, Truck, IndianRupee, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatPrice, formatDate } from '@/lib/utils';
 import type { Order } from '@/types';

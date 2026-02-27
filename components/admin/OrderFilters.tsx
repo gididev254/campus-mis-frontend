@@ -3,7 +3,7 @@
 import { memo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { Label } from '@/components/ui/Label';
-import { Input } from '@/components/ui/Input';
+import Input from '@/components/ui/Input';
 
 interface OrderFiltersProps {
   statusFilter: string;

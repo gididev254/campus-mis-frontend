@@ -8,6 +8,7 @@ import {
   DEFAULT_BLUR_DATA_URL,
   IMAGE_SIZES,
   getImageQuality,
+  normalizeImageUrl,
 } from '@/lib/imageUtils';
 import ImageSkeleton from './ImageSkeleton';
 
@@ -104,6 +105,9 @@ const OptimizedImage = memo(function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Normalize and validate the image URL
+  const normalizedSrc = useMemo(() => normalizeImageUrl(src), [src]);
+
   // Memoize aspect ratio class to prevent recalculation
   const aspectRatioClass = useMemo(() => {
     if (fill && aspectRatio) {
@@ -127,11 +131,11 @@ const OptimizedImage = memo(function OptimizedImage({
 
   // Memoize blur data URL to prevent recalculation
   const finalBlurDataURL = useMemo(() => {
-    const generatedBlurDataURL = useCloudinaryBlur
-      ? generateCloudinaryBlurDataURL(src)
+    const generatedBlurDataURL = useCloudinaryBlur && normalizedSrc
+      ? generateCloudinaryBlurDataURL(normalizedSrc)
       : null;
     return blurDataURL || generatedBlurDataURL || DEFAULT_BLUR_DATA_URL;
-  }, [src, blurDataURL, useCloudinaryBlur]);
+  }, [normalizedSrc, blurDataURL, useCloudinaryBlur]);
 
   // Memoize adaptive quality to prevent recalculation
   const adaptiveQuality = useMemo(() => {
@@ -169,7 +173,7 @@ const OptimizedImage = memo(function OptimizedImage({
 
   // Memoize image props to prevent recalculation
   const imageProps = useMemo(() => ({
-    src,
+    src: normalizedSrc || '',
     alt,
     quality: adaptiveQuality,
     priority,
@@ -197,9 +201,10 @@ const OptimizedImage = memo(function OptimizedImage({
     onLoad: handleLoad,
     placeholder: 'blur' as const,
     blurDataURL: finalBlurDataURL,
-  }), [src, alt, adaptiveQuality, priority, sizes, fill, width, height, className, isLoading, handleError, handleLoad, finalBlurDataURL, objectFit]);
+  }), [normalizedSrc, alt, adaptiveQuality, priority, sizes, fill, width, height, className, isLoading, handleError, handleLoad, finalBlurDataURL, objectFit]);
 
-  if (hasError) {
+  // Return fallback if src is invalid or has error
+  if (!normalizedSrc || hasError) {
     return <>{fallback || defaultFallback}</>;
   }
 
