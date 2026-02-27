@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Loader2, Package, Edit2, Trash2, Plus, Eye, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, Package, Edit2, Trash2, Plus, Eye, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { productsAPI } from '@/lib/api/products';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/lib/utils';
@@ -28,6 +28,7 @@ function SellerProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [reverting, setReverting] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'available' | 'sold' | 'pending'>('all');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -79,6 +80,32 @@ function SellerProductsPageContent() {
       setMessage({ type: 'error', text: errorMsg });
     } finally {
       setDeleting(null);
+    }
+  }, [products]);
+
+  const handleRevertProductStatus = useCallback(async (productId: string) => {
+    if (!confirm('Revert this product to "available" status? This will make it visible to buyers again.')) return;
+
+    setReverting(productId);
+    setMessage(null);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}/revert-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      // Update the product in the list
+      setProducts(products.map(p => p._id === productId ? { ...p, status: 'available' } : p));
+      setMessage({ type: 'success', text: 'Product status reverted to available' });
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error && 'response' in error
+        ? (error as Error & { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to revert product status'
+        : 'Failed to revert product status';
+      setMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setReverting(null);
     }
   }, [products]);
 
@@ -217,6 +244,18 @@ function SellerProductsPageContent() {
                         Edit
                       </Button>
                     </Link>
+                    {product.status === 'pending' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRevertProductStatus(product._id)}
+                        disabled={reverting === product._id}
+                        isLoading={reverting === product._id}
+                        title="Revert to available"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="danger"
                       size="sm"
