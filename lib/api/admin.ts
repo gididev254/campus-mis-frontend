@@ -132,7 +132,7 @@ interface MessagesResponse {
   };
 }
 
-interface WithdrawalRequest {
+export interface WithdrawalRequest {
   _id: string;
   amount: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
