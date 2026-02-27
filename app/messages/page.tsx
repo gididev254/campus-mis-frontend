@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, MessageCircle } from 'lucide-react';
@@ -14,7 +14,7 @@ import MessageCard from '@/components/MessageCard';
 import { toast } from '@/components/ui/Toaster';
 import type { Conversation, Message, Product } from '@/types';
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, user } = useAuth();
@@ -210,6 +210,33 @@ export default function MessagesPage() {
             })}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<MessagesPageSkeleton />}>
+      <MessagesPageContent />
+    </Suspense>
+  );
+}
+
+function MessagesPageSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
+            <div className="h-8 bg-muted rounded w-48 animate-pulse" />
+          </div>
+        </div>
+
+        {/* Conversations skeleton */}
+        <MessageListSkeleton count={8} />
       </div>
     </div>
   );
