@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSocket } from '@/contexts/SocketContext';
 import { usersAPI } from '@/lib/api/users';
 import { productsAPI } from '@/lib/api/products';
 import { ordersAPI } from '@/lib/api/orders';
@@ -29,33 +30,63 @@ import { Wallet, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 
 function SellerDashboardContent() {
   const { user, logout } = useAuth();
+  const { socket, isConnected } = useSocket();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [balance, setBalance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchData = useCallback(async () => {
+    try {
+      const [statsRes, balanceRes] = await Promise.all([
+        usersAPI.getDashboardStats(),
+        sellersAPI.getBalance()
+      ]);
+      setStats(statsRes.data.stats);
+      setRecentProducts(statsRes.data.recentProducts);
+      setRecentOrders(statsRes.data.recentOrders);
+      setBalance(balanceRes.data.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      toast.error('Failed to load dashboard data.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, balanceRes] = await Promise.all([
-          usersAPI.getDashboardStats(),
-          sellersAPI.getBalance()
-        ]);
-        setStats(statsRes.data.stats);
-        setRecentProducts(statsRes.data.recentProducts);
-        setRecentOrders(statsRes.data.recentOrders);
-        setBalance(balanceRes.data.data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        toast.error('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
+    fetchData();
+  }, [fetchData]);
+
+  // Listen for payout processed events
+  useEffect(() => {
+    if (!socket || !isConnected || !user) return;
+
+    const handlePayoutProcessed = (data: {
+      sellerId: string;
+      orderId: string;
+      orderNumber: string;
+      amount: number;
+      processedAt: string;
+    }) => {
+      if (data.sellerId === user.id) {
+        toast.success(`Payout received! Order ${data.orderNumber} - ${formatPrice(data.amount)}`);
+        // Refresh balance only
+        sellersAPI.getBalance().then(res => {
+          setBalance(res.data.data);
+        }).catch(err => {
+          console.error('Failed to refresh balance:', err);
+        });
       }
     };
 
-    fetchData();
-  }, []);
+    socket.on('payout:processed', handlePayoutProcessed);
+
+    return () => {
+      socket.off('payout:processed', handlePayoutProcessed);
+    };
+  }, [socket, isConnected, user]);
 
   const handleDeleteProduct = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;

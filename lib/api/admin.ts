@@ -132,6 +132,32 @@ interface MessagesResponse {
   };
 }
 
+interface WithdrawalRequest {
+  _id: string;
+  amount: number;
+  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  requestedAt: string;
+  processedAt?: string;
+  completedAt?: string;
+  notes?: string;
+  sellerId: string;
+  sellerName: string;
+  sellerEmail: string;
+  sellerPhone: string;
+  currentBalance: number;
+}
+
+interface WithdrawalRequestsResponse {
+  success: boolean;
+  data: WithdrawalRequest[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
 /**
  * Admin API object
  */
@@ -209,4 +235,29 @@ export const adminAPI = {
    */
   flagMessage: (id: string, data: { reason: string }) =>
     api.post<{ success: boolean; message: string; data: any }>(`/admin/messages/${id}/flag`, data),
+
+  /**
+   * Get all withdrawal requests
+   * @param params - Query parameters
+   * @param params.status - Filter by status (default: 'pending')
+   * @param params.page - Page number (default: 1)
+   * @param params.limit - Items per page (default: 20)
+   */
+  getWithdrawalRequests: (params?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get<WithdrawalRequestsResponse>('/admin/withdrawals', { params }),
+
+  /**
+   * Process withdrawal request
+   * @param requestId - Withdrawal request ID
+   * @param data - Request body
+   * @param data.status - New status ('processing' or 'completed')
+   * @param data.notes - Optional notes
+   */
+  processWithdrawalRequest: (requestId: string, data: {
+    status: 'processing' | 'completed' | 'cancelled';
+    notes?: string;
+  }) => api.put<{ success: boolean; message: string; data: any }>(`/admin/withdrawals/${requestId}`, data),
 };

@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -16,26 +15,17 @@ import {
   Truck,
   AlertCircle,
   ChevronRight,
+  Receipt,
 } from 'lucide-react';
-import { ordersAPI } from '@/lib/api/orders';
+import { ordersAPI } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/lib/utils';
 import Button from '@/components/ui/Button';
-import { OrderListSkeleton } from '@/components/ui/skeleton';
 import type { Order } from '@/types';
-import { toast } from '@/components/ui/Toaster';
 
 type OrderStatus = 'all' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
 
 export default function SellerOrdersPage() {
-  return (
-    <ClientErrorBoundary>
-      <SellerOrdersPageContent />
-    </ClientErrorBoundary>
-  );
-}
-
-function SellerOrdersPageContent() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
@@ -58,9 +48,6 @@ function SellerOrdersPageContent() {
       setOrders(res.data.data || []);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
-        toast.error('Failed to load orders.');
-      toast.error('Failed to load orders');
-
       setMessage({ type: 'error', text: 'Failed to load orders' });
     } finally {
       setLoading(false);
@@ -157,16 +144,10 @@ function SellerOrdersPageContent() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header skeleton */}
-          <div className="flex items-center space-x-3 mb-8">
-            <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
-            <div className="h-8 bg-muted rounded w-48 animate-pulse" />
-          </div>
-
-          {/* Orders skeleton */}
-          <OrderListSkeleton count={5} />
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading orders...</p>
         </div>
       </div>
     );
@@ -334,6 +315,22 @@ function SellerOrdersPageContent() {
                         </div>
                       </div>
 
+                      {/* Payment Details */}
+                      {order.paymentStatus === 'completed' && (order.mpesaTransactionId || order.mpesaPhoneNumber) && (
+                        <div className="flex items-start space-x-3">
+                          <Receipt className="h-5 w-5 text-green-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="font-semibold mb-1">Payment Details</p>
+                            {order.mpesaTransactionId && (
+                              <p className="font-mono text-sm text-green-600 mb-1">{order.mpesaTransactionId}</p>
+                            )}
+                            {order.mpesaPhoneNumber && (
+                              <p className="text-sm text-muted-foreground">Paid with: {order.mpesaPhoneNumber}</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Notes */}
                       {order.notes && (
                         <div className="p-3 bg-muted rounded-lg">
@@ -350,7 +347,7 @@ function SellerOrdersPageContent() {
                             <div className="relative h-20 w-20 rounded overflow-hidden bg-muted flex-shrink-0">
                               <Image
                                 src={order.product.images[0]}
-                                alt={order.product?.title || 'Product'}
+                                alt={order.product.title}
                                 fill
                                 className="object-cover"
                               />
@@ -361,7 +358,7 @@ function SellerOrdersPageContent() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <p className="font-semibold">{order.product?.title || 'Unknown Product'}</p>
+                            <p className="font-semibold">{order.product?.title}</p>
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                               {order.product?.description}
                             </p>

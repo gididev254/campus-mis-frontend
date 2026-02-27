@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { sellersAPI, type Transaction } from '@/lib/api/sellers';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSocket } from '@/contexts/SocketContext';
 import { formatPrice, formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
@@ -22,8 +23,10 @@ import Button from '@/components/ui/Button';
 
 function EarningsPageContent() {
   const { user } = useAuth();
+  const { socket, isConnected } = useSocket();
   const [balance, setBalance] = useState<any>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
@@ -34,6 +37,7 @@ function EarningsPageContent() {
       const res = await sellersAPI.getBalance();
       setBalance(res.data.data);
       setTransactions(res.data.data.ledger || []);
+      setWithdrawalRequests(res.data.data.withdrawalRequests || []);
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       toast.error('Failed to load balance information.');
@@ -45,6 +49,30 @@ function EarningsPageContent() {
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
+
+  // Listen for payout processed events
+  useEffect(() => {
+    if (!socket || !isConnected || !user) return;
+
+    const handlePayoutProcessed = (data: {
+      sellerId: string;
+      orderId: string;
+      orderNumber: string;
+      amount: number;
+      processedAt: string;
+    }) => {
+      if (data.sellerId === user.id) {
+        toast.success(`Payout received! Order ${data.orderNumber} - ${formatPrice(data.amount)}`);
+        fetchBalance();
+      }
+    };
+
+    socket.on('payout:processed', handlePayoutProcessed);
+
+    return () => {
+      socket.off('payout:processed', handlePayoutProcessed);
+    };
+  }, [socket, isConnected, user, fetchBalance]);
 
   const handleWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount);
@@ -246,6 +274,66 @@ function EarningsPageContent() {
                   Withdrawal requests are typically processed within 1-3 business days.
                   You will receive a notification when your withdrawal is completed.
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Withdrawal Requests */}
+        {withdrawalRequests.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Withdrawal Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {withdrawalRequests.map((request) => (
+                  <div
+                    key={request._id}
+                    className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        {request.status === 'pending' && <Clock className="h-5 w-5 text-yellow-600" />}
+                        {request.status === 'processing' && <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />}
+                        {request.status === 'completed' && <CheckCircle className="h-5 w-5 text-green-600" />}
+                        {request.status === 'cancelled' && <XCircle className="h-5 w-5 text-red-600" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <p className="font-semibold">{formatPrice(request.amount)}</p>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            request.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                            request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Requested {formatRelativeTime(request.requestedAt)}
+                        </p>
+                        {request.notes && (
+                          <p className="text-xs text-muted-foreground mt-1">Note: {request.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">
+                        {request.status === 'pending' && 'Awaiting processing'}
+                        {request.status === 'processing' && 'Being processed'}
+                        {request.status === 'completed' && 'Completed'}
+                        {request.status === 'cancelled' && 'Cancelled'}
+                      </p>
+                      {request.completedAt && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatRelativeTime(request.completedAt)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
