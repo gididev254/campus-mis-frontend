@@ -24,13 +24,18 @@ export function formatPrice(price: number): string {
  * @returns Formatted date string (e.g., "February 25, 2026 at 2:30 PM")
  */
 export function formatDate(date: string | Date): string {
+  const dateObj = new Date(date);
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    return 'Unknown date';
+  }
   return new Intl.DateTimeFormat('en-KE', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  }).format(new Date(date));
+  }).format(dateObj);
 }
 
 /**
@@ -39,11 +44,16 @@ export function formatDate(date: string | Date): string {
  * @returns Formatted date string (e.g., "25 Feb 2026")
  */
 export function formatDateShort(date: string | Date): string {
+  const dateObj = new Date(date);
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    return 'Unknown date';
+  }
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric'
-  }).format(new Date(date));
+  }).format(dateObj);
 }
 
 /**
@@ -54,6 +64,12 @@ export function formatDateShort(date: string | Date): string {
 export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
   const past = new Date(date);
+
+  // Check if date is valid
+  if (isNaN(past.getTime())) {
+    return 'Unknown date';
+  }
+
   const diffMs = now.getTime() - past.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);

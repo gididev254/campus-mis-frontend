@@ -1,38 +1,20 @@
 import { Metadata } from 'next';
-import { productsAPI } from '@/lib/api/products';
-import { generateProductMetadata, generateBreadcrumbSchema } from '@/lib/seo';
-import StructuredData from '@/components/StructuredData';
 import ProductDetailClient from './ProductDetailClient';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-// Generate dynamic metadata for product pages
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  try {
-    const response = await productsAPI.getProduct(params.id);
-    const product = response.data.product;
-
-    return generateProductMetadata({
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      images: product.images,
-      category: product.category?.name || 'Uncategorized',
-      condition: product.condition,
-      location: product.location,
-      _id: product._id,
-    });
-  } catch (error) {
-    // Fallback metadata if product not found
-    return {
-      title: 'Product Not Found | Embuni Campus Market',
-      description: 'The requested product could not be found.',
-    };
-  }
+// Static metadata for product pages
+// Dynamic metadata is set on the client side by ProductDetailClient
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Product Details | Embuni Campus Market',
+    description: 'View product details, contact sellers, and make purchases on Embuni Campus Market.',
+  };
 }
 
-export default function ProductDetailPage({ params }: PageProps) {
-  return <ProductDetailClient productId={params.id} />;
+export default async function ProductDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  return <ProductDetailClient productId={id} />;
 }
