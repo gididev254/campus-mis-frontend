@@ -35,9 +35,14 @@ function EarningsPageContent() {
   const fetchBalance = useCallback(async () => {
     try {
       const res = await sellersAPI.getBalance();
-      setBalance(res.data.data);
-      setTransactions(res.data.data.ledger || []);
-      setWithdrawalRequests(res.data.data.withdrawalRequests || []);
+      const balanceData = res.data.data;
+      setBalance(balanceData);
+      setTransactions(balanceData.ledger || []);
+      // Filter withdrawal transactions from ledger
+      const withdrawals = (balanceData.ledger || []).filter(
+        (t: Transaction) => t.type === 'withdrawal'
+      );
+      setWithdrawalRequests(withdrawals);
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       toast.error('Failed to load balance information.');
@@ -61,7 +66,7 @@ function EarningsPageContent() {
       amount: number;
       processedAt: string;
     }) => {
-      if (data.sellerId === user.id) {
+      if (data.sellerId === user._id) {
         toast.success(`Payout received! Order ${data.orderNumber} - ${formatPrice(data.amount)}`);
         fetchBalance();
       }

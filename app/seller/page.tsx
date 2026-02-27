@@ -70,7 +70,7 @@ function SellerDashboardContent() {
       amount: number;
       processedAt: string;
     }) => {
-      if (data.sellerId === user.id) {
+      if (data.sellerId === user._id) {
         toast.success(`Payout received! Order ${data.orderNumber} - ${formatPrice(data.amount)}`);
         // Refresh balance only
         sellersAPI.getBalance().then(res => {
