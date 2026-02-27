@@ -38,5 +38,6 @@ export { cartAPI } from './api/cart';
 export { wishlistAPI } from './api/wishlist';
 export { notificationsAPI } from './api/notifications';
 export { uploadAPI } from './api/upload';
+export { adminAPI } from './api/admin';
 export { healthAPI } from './api/health';
 export type { BasicHealthResponse, DetailedHealthResponse, DatabaseStats } from './api/health';

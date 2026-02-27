@@ -57,12 +57,16 @@ export interface Order {
   notes?: string;
   cancelledAt?: string;
   deliveredAt?: string;
+  cancellationReason?: 'buyer-request' | 'seller-request' | 'payment-failed' | 'other';
   // Seller payout fields
   sellerPaid?: boolean;
   sellerPaidAt?: string;
   sellerPaidBy?: User;
   sellerPayoutNotes?: string;
+  checkoutSessionId?: string;
+  checkoutRequestID?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Message {

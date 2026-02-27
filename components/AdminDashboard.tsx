@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
-import { Users, Package, ShoppingCart, TrendingUp, Settings, Wallet, Loader2 } from 'lucide-react';
+import { Users, Package, ShoppingCart, TrendingUp, Settings, Wallet, Loader2, ClipboardList, BarChart3, MessageSquare, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI } from '@/lib/api/users';
 import { productsAPI } from '@/lib/api/products';
@@ -13,6 +13,22 @@ import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
 
 // Static dashboard links - moved outside component to prevent recreation
 const DASHBOARD_LINKS = [
+  {
+    href: '/admin/analytics',
+    icon: BarChart3,
+    title: 'Analytics',
+    description: 'View platform analytics and insights',
+    customClass: 'border-purple-200 bg-purple-50/50 dark:border-purple-900 dark:bg-purple-950/20',
+    iconClass: 'text-purple-600',
+  },
+  {
+    href: '/admin/orders',
+    icon: ClipboardList,
+    title: 'Manage Orders',
+    description: 'View and manage all platform orders',
+    customClass: 'border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
+    iconClass: 'text-blue-600',
+  },
   {
     href: '/admin/users',
     icon: Users,
@@ -36,6 +52,22 @@ const DASHBOARD_LINKS = [
     description: 'Manage product categories',
     customClass: '',
     iconClass: '',
+  },
+  {
+    href: '/admin/reviews',
+    icon: Star,
+    title: 'Review Moderation',
+    description: 'Moderate product reviews',
+    customClass: 'border-yellow-200 bg-yellow-50/50 dark:border-yellow-900 dark:bg-yellow-950/20',
+    iconClass: 'text-yellow-600',
+  },
+  {
+    href: '/admin/messages',
+    icon: MessageSquare,
+    title: 'Message Moderation',
+    description: 'View user communications',
+    customClass: 'border-indigo-200 bg-indigo-50/50 dark:border-indigo-900 dark:bg-indigo-950/20',
+    iconClass: 'text-indigo-600',
   },
   {
     href: '/admin/payouts',

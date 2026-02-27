@@ -307,7 +307,7 @@ function PayoutLedgerContent() {
                                       <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
                                         <Image
                                           src={order.product.images[0]}
-                                          alt={order.product.title}
+                                          alt={order.product?.title || 'Product'}
                                           fill
                                           className="object-cover"
                                           sizes="32px"
@@ -315,9 +315,9 @@ function PayoutLedgerContent() {
                                       </div>
                                     )}
                                     <div className="max-w-xs">
-                                      <div className="text-sm font-medium truncate">{order.product.title}</div>
+                                      <div className="text-sm font-medium truncate">{order.product?.title || 'Unknown Product'}</div>
                                       <div className="text-xs text-muted-foreground">
-                                        {order.product.condition} • {formatPrice(order.product.price)}
+                                        {order.product?.condition || 'N/A'} • {formatPrice(order.product?.price || 0)}
                                       </div>
                                     </div>
                                   </div>
