@@ -149,5 +149,6 @@ export { cartAPI } from './cart';
 export { wishlistAPI } from './wishlist';
 export { notificationsAPI } from './notifications';
 export { uploadAPI } from './upload';
+export { sellersAPI } from './sellers';
 
 export default api;

@@ -49,6 +49,9 @@ function CheckoutPageContent() {
     building: '',
     room: ''
   });
+  const [pendingOrder, setPendingOrder] = useState<any>(null);
+  const [checkoutRequestID, setCheckoutRequestID] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -109,17 +112,78 @@ function CheckoutPageContent() {
         phoneNumber,
       });
 
-      toast.success(`Payment initiated! Please check your phone for the M-Pesa prompt. Checkout Request ID: ${paymentRes.data.checkoutRequestID}`);
+      const checkoutID = paymentRes.data.checkoutRequestID;
+      setCheckoutRequestID(checkoutID);
+      setPendingOrder(order);
 
-      // Redirect to order details
-      router.push(`/buyer/orders/${order._id}`);
+      toast.success(`Payment initiated! Please check your phone for the M-Pesa prompt.\n\nCheckout Request ID: ${checkoutID}`);
+
+      // Start polling for payment status
+      pollPaymentStatus(order._id);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || 'Failed to place order. Please try again.');
-    } finally {
       setProcessing(false);
     }
   }, [product, phoneNumber, shippingAddress, quantity, router]);
+
+  // Poll for payment status
+  const pollPaymentStatus = useCallback(async (orderId: string) => {
+    const maxAttempts = 30; // Poll for up to 5 minutes (30 * 10 seconds)
+    let attempts = 0;
+
+    const poll = async () => {
+      try {
+        const statusRes = await ordersAPI.getPaymentStatus(orderId);
+        const status = statusRes.data.data.paymentStatus;
+
+        console.log('[Checkout] Payment status check:', { attempt: attempts + 1, status });
+
+        if (status === 'completed') {
+          setPaymentStatus('completed');
+          setProcessing(false);
+          toast.success('Payment successful! Redirecting to your order...');
+          setTimeout(() => {
+            router.push(`/buyer/orders/${orderId}`);
+          }, 2000);
+          return;
+        }
+
+        if (status === 'failed') {
+          setPaymentStatus('failed');
+          setProcessing(false);
+          toast.error('Payment failed. Please try again.');
+          return;
+        }
+
+        // Still pending, continue polling
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 10000); // Poll every 10 seconds
+        } else {
+          setProcessing(false);
+          toast.error('Payment verification timed out. Please check your orders page for status.');
+          setTimeout(() => {
+            router.push(`/buyer/orders/${orderId}`);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('[Checkout] Error polling payment status:', error);
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 10000);
+        } else {
+          setProcessing(false);
+          toast.error('Unable to verify payment. Please check your orders page.');
+          setTimeout(() => {
+            router.push(`/buyer/orders/${orderId}`);
+          }, 3000);
+        }
+      }
+    };
+
+    poll();
+  }, [router]);
 
   if (loading) {
     return (
@@ -127,6 +191,66 @@ function CheckoutPageContent() {
         <div className="max-w-2xl mx-auto text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Payment waiting state
+  if (pendingOrder && checkoutRequestID) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="rounded-lg border bg-card p-8 text-center">
+            {paymentStatus === 'pending' ? (
+              <>
+                <Loader2 className="h-16 w-16 animate-spin mx-auto mb-6 text-primary" />
+                <h2 className="text-2xl font-bold mb-4">Waiting for Payment</h2>
+                <p className="text-muted-foreground mb-6">
+                  Please check your phone and enter your M-Pesa PIN to complete the payment.
+                </p>
+                <div className="bg-muted rounded-lg p-4 mb-6">
+                  <p className="text-sm text-muted-foreground mb-2">Checkout Request ID:</p>
+                  <p className="font-mono font-semibold">{checkoutRequestID}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  This page will automatically update once payment is confirmed...
+                </p>
+              </>
+            ) : paymentStatus === 'completed' ? (
+              <>
+                <div className="h-16 w-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold mb-4 text-green-600">Payment Successful!</h2>
+                <p className="text-muted-foreground">Redirecting to your order details...</p>
+              </>
+            ) : (
+              <>
+                <div className="h-16 w-16 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold mb-4 text-red-600">Payment Failed</h2>
+                <p className="text-muted-foreground mb-6">
+                  The payment could not be completed. Please try again.
+                </p>
+                <button
+                  onClick={() => {
+                    setPendingOrder(null);
+                    setCheckoutRequestID('');
+                    setPaymentStatus('pending');
+                  }}
+                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  Try Again
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );

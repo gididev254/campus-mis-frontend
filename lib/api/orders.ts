@@ -43,6 +43,21 @@ export const ordersAPI = {
   }) => api.get<PaginationResponse<Order>>('/orders', { params }),
 
   /**
+   * Get payment status for an order
+   */
+  getPaymentStatus: (id: string) =>
+    api.get<{
+      success: boolean;
+      data: {
+        orderId: string;
+        orderNumber: string;
+        paymentStatus: string;
+        checkoutRequestID: string;
+        mpesaTransactionId?: string;
+      };
+    }>(`/orders/${id}/payment-status`),
+
+  /**
    * Update order status
    */
   updateOrderStatus: (id: string, data: { status: string }) =>

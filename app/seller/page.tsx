@@ -19,26 +19,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersAPI } from '@/lib/api/users';
 import { productsAPI } from '@/lib/api/products';
 import { ordersAPI } from '@/lib/api/orders';
+import { sellersAPI } from '@/lib/api/sellers';
 import type { Product, Order, DashboardStats } from '@/types';
 import { formatPrice, formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ClientErrorBoundary } from '@/components/ClientErrorBoundary';
 import { toast } from '@/components/ui/Toaster';
+import { Wallet, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 
 function SellerDashboardContent() {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [balance, setBalance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await usersAPI.getDashboardStats();
-        setStats(res.data.stats);
-        setRecentProducts(res.data.recentProducts);
-        setRecentOrders(res.data.recentOrders);
+        const [statsRes, balanceRes] = await Promise.all([
+          usersAPI.getDashboardStats(),
+          sellersAPI.getBalance()
+        ]);
+        setStats(statsRes.data.stats);
+        setRecentProducts(statsRes.data.recentProducts);
+        setRecentOrders(statsRes.data.recentOrders);
+        setBalance(balanceRes.data.data);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
         toast.error('Failed to load dashboard data.');
@@ -107,57 +114,106 @@ function SellerDashboardContent() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.products.total}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.products.available} available
-              </p>
-            </CardContent>
-          </Card>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.products.total}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.products.available} available
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.orders.total}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.orders.pending} pending
-              </p>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.orders.total}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.orders.pending} pending
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatPrice(stats.revenue)}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.orders.completed} completed
-              </p>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatPrice(stats.revenue)}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.orders.completed} completed
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Messages</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.unreadMessages}</div>
-              <p className="text-xs text-muted-foreground">unread</p>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Messages</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.unreadMessages}</div>
+                <p className="text-xs text-muted-foreground">unread</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Balance Card */}
+          {balance && (
+            <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Wallet className="h-5 w-5" />
+                    <span>Your Balance</span>
+                  </CardTitle>
+                  <Link href="/seller/earnings">
+                    <button className="text-sm text-primary hover:underline">
+                      View Details →
+                    </button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
+                    <p className="text-3xl font-bold text-primary">{formatPrice(balance.currentBalance)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
+                    <p className="text-2xl font-semibold flex items-center">
+                      <ArrowDownToLine className="h-4 w-4 mr-2 text-green-600" />
+                      {formatPrice(balance.totalEarnings)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Withdrawn Total</p>
+                    <p className="text-2xl font-semibold flex items-center">
+                      <ArrowUpFromLine className="h-4 w-4 mr-2 text-blue-600" />
+                      {formatPrice(balance.withdrawnTotal)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Pending Withdrawals</p>
+                    <p className="text-2xl font-semibold text-yellow-600">
+                      {formatPrice(balance.pendingWithdrawals)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

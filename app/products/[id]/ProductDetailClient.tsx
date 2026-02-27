@@ -56,8 +56,9 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
         console.log('[ProductDetailClient] Product fetched successfully:', { _id: res.data.product?._id, title: res.data.product?.title });
 
         if (!res.data.product) {
-          console.error('[ProductDetailClient] Product data is null');
-          router.push('/products');
+          console.error('[ProductDetailClient] Product data is null - API response:', res.data);
+          toast.error('Invalid product data received from server');
+          // Don't redirect - show error to user
           return;
         }
 
@@ -83,9 +84,9 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
           return;
         }
 
-        // For other errors, still show the error but don't redirect
+        // For other errors, show error message and stay on page to let user retry
         toast.error(error.response?.data?.message || 'Failed to load product');
-        router.push('/products');
+        // Don't redirect - let the user see the error and potentially retry
       } finally {
         setLoading(false);
       }
@@ -155,7 +156,24 @@ export default function ProductDetailClient({ productId }: ProductDetailClientPr
     );
   }
 
-  if (!product) return null;
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-3xl font-bold mb-4">Product Not Available</h1>
+          <p className="text-muted-foreground mb-8">
+            This product could not be loaded. It may have been removed or the ID is invalid.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <Button variant="outline" onClick={() => router.push('/products')}>
+              Browse Products
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Generate structured data
   const productSchema = product ? generateProductSchema({
