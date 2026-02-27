@@ -75,7 +75,11 @@ export default function MessagesPage() {
 
         // Create initial message about the product
         const initialMessage = `Hi, I'm interested in your product "${product.title}".`;
-        await messagesAPI.sendMessage(targetUserId, initialMessage, productId);
+        await messagesAPI.sendMessage({
+          receiver: targetUserId,
+          content: initialMessage,
+          product: productId,
+        });
 
         toast.success('Conversation started!');
         await fetchConversations();
